@@ -2,7 +2,7 @@
 
 Better minion roulette plugin for FFXIV
 
-Allows for a more granular approach to selecting the minions you want included in your minion roulette instead of the very binary "up to 30" and "EVERYTHING!!!!" options the game gives us.
+Allows for a more granular approach to selecting the minions you want included in your minion roulette instead of the very binary "up to 30" and "EVERYTHING!!!!" options the game gives us.   
 Also implements (or will implement) the ability to omit minions that are summoned on your island sanctuary.
 
 ## Limitations and known bugs
@@ -13,6 +13,16 @@ Also implements (or will implement) the ability to omit minions that are summone
 
 Things I intend to implement at some point in the future. Before posting a feature request, please make sure it's not already listed here:
 
-- Island Sanctuary Blacklist
-  - Disables the minions and forbids them from being enabled when summoned on the Island Sanctuary.
-- Search function for the settings, so you can finally disable that one eyesore of a minion you just can't seem to find without it.
+- Minion Groups
+  - For summoning a minion from a random group.
+  - To treat as a single mount. Got 85 different flavours of "horse" but only the company chocobo otherwise? Put the horses in a group and treat it as a single mount for a 50/50 chance of getting "a random horse" or the chocobo.
+- Summon criteria
+  - Summon mount with specified number of seats (to move the whole party).
+  - Summon mount with/without custom BGM.
+  - Summon fastest mount (i.e. SDS Fenrir if owned and riding map not unlocked, random otherwise)
+  - Maybe more
+
+## Credits
+
+A lot of this code is heavily borrowed from [CMDRNuffin/BetterMountRoulette](https://github.com/CMDRNuffin/BetterMountRoulette).   
+As per usual this code follows the Dalamud License.
