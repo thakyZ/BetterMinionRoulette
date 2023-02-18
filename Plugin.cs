@@ -1,4 +1,9 @@
-﻿using BetterMinionRoulette.Agent;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+
 using BetterMinionRoulette.Config;
 using BetterMinionRoulette.SubCommands;
 using BetterMinionRoulette.UI;
@@ -7,30 +12,15 @@ using BetterMinionRoulette.Util;
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Hooking;
-using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.Housing;
-using FFXIVClientStructs.FFXIV.Client.Game.MJI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.Interop.Attributes;
 
 using Lumina;
-using Lumina.Data.Parsing.Uld;
 using Lumina.Excel.GeneratedSheets;
-
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
 
 namespace BetterMinionRoulette;
 
@@ -116,11 +106,7 @@ public sealed class Plugin : IDalamudPlugin {
 
       _ = CommandManager.AddHandler(CommandText, new CommandInfo(HandleCommand) { HelpMessage = CommandHelpMessage });
 
-#if DEBUG
-      _ = CommandManager.AddHandler("/mjitest", new CommandInfo(MJITestCommand) { HelpMessage = "Test the MJI extensions manually" });
-#endif
-
-      var renderAddress = (nint)ActionManager.Addresses.UseAction.Value;
+      nint renderAddress = (nint)ActionManager.Address.UseAction.Value;
 
       if (renderAddress is 0) {
         WindowManager.DebugWindow.Broken("Unable to load UseAction address");
@@ -146,26 +132,10 @@ public sealed class Plugin : IDalamudPlugin {
     LoadCharacter();
   }
 
-#if DEBUG
-  private unsafe void MJITests() {
-    if (((MJIPastureHandlerExtension*)MJIManager.Instance()->PastureHandler) != null) {
-      var mjiPastureHandler = (MJIPastureHandlerExtension*)MJIManager.Instance()->PastureHandler;
-      Log($"{string.Join(", ", from minion in mjiPastureHandler->MinionSlotsList.ToArray() select minion.ObjectId)}");
-      Log($"{string.Join(", ", from minion in mjiPastureHandler->MinionSlotsList.ToArray() select minion.MinionId)}");
-      Log($"{string.Join(", ", from minion in mjiPastureHandler->MinionSlotsList.ToArray() select minion.PopAreaId)}");
-      Log($"{string.Join(", ", from minion in mjiPastureHandler->MinionSlotsList.ToArray() select minion.SlotId)}");
-      Log($"{string.Join(", ", from minion in mjiPastureHandler->MinionSlotsList.ToArray() select minion.IsSlotPopulated())}");
-    }
-  }
-#endif
-
   private void ClientState_TerritoryChanged(object? sender, ushort territoryID) {
     var territoryTypeSheet = DataManager.Excel.GetSheet<TerritoryType>()!;
     var islandSanctuary = territoryTypeSheet.First(x => x.Name == "h1m2");
     if (islandSanctuary is not null) {
-#if DEBUG
-      MJITests();
-#endif
       Minions.RefreshIsland();
     }
   }
@@ -189,18 +159,6 @@ public sealed class Plugin : IDalamudPlugin {
   internal static void SaveConfig(Configuration configuration) {
     GetPlugin().PluginInterface.SavePluginConfig(configuration);
   }
-
-#if DEBUG
-  private unsafe void MJITestCommand(string command, string arguments) {
-    var split = arguments.Split(" ");
-    if (int.TryParse(split[0], out int index)) {
-      var mjiPastureHandler = (MJIPastureHandlerExtension*)MJIManager.Instance()->PastureHandler;
-      Log($"{mjiPastureHandler->RoamingMinionList[index]}");
-    } else {
-      MJITests();
-    }
-  }
-#endif
 
   private void HandleCommand(string command, string arguments) {
     // DONE: correctly handle arguments, including
@@ -308,9 +266,6 @@ public sealed class Plugin : IDalamudPlugin {
       TextureHelper.Dispose();
 
       _ = CommandManager.RemoveHandler(CommandText);
-#if DEBUG
-      _ = CommandManager.RemoveHandler("/mjitest");
-#endif
 
       CastBarHelper.Plugin = null;
       CastBarHelper.Disable();

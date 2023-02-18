@@ -1,8 +1,8 @@
-﻿using Dalamud.Game.Gui;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+
+using Dalamud.Game.Gui;
 
 namespace BetterMinionRoulette.SubCommands;
 

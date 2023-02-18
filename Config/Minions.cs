@@ -1,7 +1,14 @@
-﻿using BetterMinionRoulette.Agent;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
 using BetterMinionRoulette.UI;
 using BetterMinionRoulette.Util;
+
 using Dalamud.Logging;
+
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.Interop;
@@ -10,11 +17,6 @@ using ImGuiNET;
 
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
 
 namespace BetterMinionRoulette.Config;
 
@@ -153,13 +155,25 @@ internal sealed class Minions {
     }
   }
 
+  public static unsafe bool IsPlayersOwnIsland() {
+    var mjiManager = MJIManager.Instance();
+    if (mjiManager is not null) {
+      return mjiManager->IslandState.CanEditIsland;
+    }
+    return false;
+  }
+
+  public static unsafe Span<bool> RoamingMinionList(byte* roamingMinions) {
+    return new(Unsafe.AsPointer(ref roamingMinions[0]), 480);
+  }
+
   public static unsafe void RefreshIsland() {
-    var mjiPastureHandler = (MJIPastureHandlerExtension*)MJIManager.Instance()->PastureHandler;
+    var mjiPastureHandler = MJIManager.Instance()->PastureHandler;
     InitializeIfNecessary();
-    if (mjiPastureHandler is not null) {
+    if (mjiPastureHandler is not null && IsPlayersOwnIsland()) {
       Plugin.Log("Refreshing island spawned");
       foreach (var minion in _minions) {
-        minion.Island = mjiPastureHandler->RoamingMinionList[(int)minion.ID];
+        minion.Island = RoamingMinionList(mjiPastureHandler->RoamingMinions)[(int)minion.ID];
       }
     }
   }

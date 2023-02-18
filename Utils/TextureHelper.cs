@@ -1,10 +1,10 @@
-﻿using Dalamud.Data;
-
-using ImGuiScene;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Dalamud.Data;
+
+using ImGuiScene;
 
 namespace BetterMinionRoulette.Util;
 

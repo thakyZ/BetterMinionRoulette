@@ -1,13 +1,13 @@
-﻿using Dalamud.Hooking;
+﻿using System.Linq;
+using System.Reflection;
+
+using Dalamud.Hooking;
 
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
-
-using System.Linq;
-using System.Reflection;
 
 using Addon = FFXIVClientStructs.Attributes.Addon;
 
