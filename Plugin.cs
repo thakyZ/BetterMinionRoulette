@@ -106,7 +106,7 @@ public sealed class Plugin : IDalamudPlugin {
 
       _ = CommandManager.AddHandler(CommandText, new CommandInfo(HandleCommand) { HelpMessage = CommandHelpMessage });
 
-      nint renderAddress = (nint)ActionManager.Address.UseAction.Value;
+      nint renderAddress = (nint)ActionManager.Addresses.UseAction.Value;
 
       if (renderAddress is 0) {
         WindowManager.DebugWindow.Broken("Unable to load UseAction address");
