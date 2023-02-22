@@ -1,4 +1,4 @@
-﻿using BetterMinionRoulette.Config;
+﻿using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
 using ImGuiNET;
 
