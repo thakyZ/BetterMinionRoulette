@@ -3,9 +3,11 @@
     <Version>1.0.0.0</Version>
     <Company></Company>
     <Authors>Neko Boi Nick</Authors>
-    <Description>Allows any number of mounts to be enabled for the mount roulette, instead of having to choose between the
-  "up to 30" and "EVERYTHING" modes supported by the game. Also has (or will have) an option to omit the
-  island sanctuary minions from being spawned.</Description>
+    <Description>
+      Allows any number of mounts to be enabled for the mount roulette, instead of having to choose between the
+      "up to 30" and "EVERYTHING" modes supported by the game. Also has (or will have) an option to omit the
+      island sanctuary minions from being spawned.
+    </Description>
     <PackageProjectUrl>https://github.com/thakyZ/BetterMinionRoulette-Dalamud</PackageProjectUrl>
     <Copyright></Copyright>
     <AssemblyTitle>Better Minion Roulette</AssemblyTitle>
@@ -93,6 +95,10 @@
       <HintPath>$(PROJECTDIR)\lib\FFXIVClientStructs\bin\$(Configuration)\FFXIVClientStructs.dll</HintPath>
       <Private>true</Private>
     </Reference>
+    <!--<Reference Include="FFXIVClientStructs">
+      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>-->
   </ItemGroup>
 
   <ItemGroup>
@@ -103,5 +109,9 @@
 
   <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="images\" />
   </ItemGroup>
 </Project>

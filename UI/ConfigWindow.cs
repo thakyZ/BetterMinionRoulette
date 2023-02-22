@@ -29,16 +29,27 @@ internal sealed class ConfigWindow : IWindow {
 
   public void Draw() {
     if (ImGui.Begin("Better Minion Roulette", ref _isOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
-      if (!_plugin.ClientState.IsLoggedIn) {
-        ImGui.Text("Please log in first");
-      } else if (ImGui.BeginTabBar("settings")) {
-        if (ImGui.BeginTabItem("Minions")) {
-          var Minions = SelectCurrentGroup();
-          DrawMinionGroup(Minions);
+      if (ImGui.BeginTabBar("settings")) {
+        if (ImGui.BeginTabItem("General")) {
+          bool enablePlugin =  _plugin.Configuration.Enabled;
+          _ = ImGui.Checkbox("Enable", ref enablePlugin);
+
+          if (enablePlugin != _plugin.Configuration.Enabled) {
+            _plugin.Configuration.Enabled = enablePlugin;
+          }
           ImGui.EndTabItem();
         }
+        if (ImGui.BeginTabItem("Minions")) {
+          if (!_plugin.ClientState.IsLoggedIn) {
+            ImGui.Text("Please log in first");
+          } else {
+            var Minions = SelectCurrentGroup();
+            DrawMinionGroup(Minions);
+            ImGui.EndTabItem();
+          }
 
-        ImGui.EndTabBar();
+          ImGui.EndTabBar();
+        }
       }
     }
 

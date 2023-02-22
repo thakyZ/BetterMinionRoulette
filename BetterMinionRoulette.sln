@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BetterMinionRoulette", "BetterMinionRoulette.csproj", "{13C812E9-0D42-4B95-8646-40EEBF30636F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{07D2B472-3CC9-438D-A4DA-B4DAAA2991F0} = {07D2B472-3CC9-438D-A4DA-B4DAAA2991F0}
+		{52E448F6-C19F-40E8-8C48-6F68AFA27BB5} = {52E448F6-C19F-40E8-8C48-6F68AFA27BB5}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "lib\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{52E448F6-C19F-40E8-8C48-6F68AFA27BB5}"
 EndProject

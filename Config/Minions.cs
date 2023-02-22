@@ -144,7 +144,6 @@ internal sealed class Minions {
 
   public static void RefreshUnlocked() {
     if (!Plugin.GetPlugin().ClientState.IsLoggedIn) {
-      PluginLog.Error("!Plugin.GetPlugin().ClientState.IsLoggedIn");
       return;
     }
 

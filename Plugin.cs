@@ -15,6 +15,7 @@ using Dalamud.Game.ClientState;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Hooking;
+using Dalamud.Logging;
 using Dalamud.Plugin;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -73,6 +74,9 @@ public sealed class Plugin : IDalamudPlugin {
     DataManager dataManager,
     ChatGui chatGui,
     ClientState clientState) {
+    FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace();
+    FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+
     PluginInterface = pluginInterface;
     SigScanner = sigScanner;
     CommandManager = commandManager;
@@ -218,6 +222,7 @@ public sealed class Plugin : IDalamudPlugin {
     var isRouletteActionID = actionID is 10;
     var oldActionType = actionType;
     var oldActionId = actionID;
+    PluginLog.Information($"groupName {groupName ?? "Null"}");
     if (groupName is not null) {
       var newActionID = Minions.GetInstance(groupName)!.GetRandom(actionManager);
       if (newActionID != 0) {
