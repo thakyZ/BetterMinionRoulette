@@ -6,7 +6,7 @@ using Dalamud.Configuration;
 
 using Newtonsoft.Json;
 
-namespace BetterMinionRoulette.Config;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
 [Serializable]
 internal sealed class Configuration : IPluginConfiguration {
@@ -32,8 +32,7 @@ internal sealed class Configuration : IPluginConfiguration {
   }
 
   public static Configuration Init() {
-    var res = new Configuration { Version = CONFIG_VERSION };
-    return res;
+    return new Configuration { Version = CONFIG_VERSION };
   }
 
   public static Configuration LoadOnLogin(Configuration config) {

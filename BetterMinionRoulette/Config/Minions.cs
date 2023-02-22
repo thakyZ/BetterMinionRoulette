@@ -4,10 +4,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-using BetterMinionRoulette.UI;
-using BetterMinionRoulette.Util;
-
-using Dalamud.Logging;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -18,7 +16,7 @@ using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using Lumina.Text;
 
-namespace BetterMinionRoulette.Config;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
 internal sealed class Minions {
   private const int PAGE_SIZE = COLUMNS * ROWS;

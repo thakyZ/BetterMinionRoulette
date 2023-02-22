@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.UI;
 
-namespace BetterMinionRoulette.Util;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 
 internal static class GameFunctions {
   public static unsafe bool HasMinionUnlocked(uint id) {

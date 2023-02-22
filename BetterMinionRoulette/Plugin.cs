@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using BetterMinionRoulette.Config;
-using BetterMinionRoulette.SubCommands;
-using BetterMinionRoulette.UI;
-using BetterMinionRoulette.Util;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 
 using Dalamud.Data;
 using Dalamud.Game;
@@ -23,7 +23,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina;
 using Lumina.Excel.GeneratedSheets;
 
-namespace BetterMinionRoulette;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette;
 
 public sealed class Plugin : IDalamudPlugin {
   private static Plugin _plugin { get; set; } = null!;

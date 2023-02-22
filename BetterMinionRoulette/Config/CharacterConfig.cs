@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BetterMinionRoulette.Config;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
 internal sealed class CharacterConfig {
   public string CharacterName { get; set; } = "";

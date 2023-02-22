@@ -11,7 +11,7 @@ using Lumina.Text;
 
 using Addon = FFXIVClientStructs.Attributes.Addon;
 
-namespace BetterMinionRoulette.Util;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 
 internal static class CastBarHelper {
   private static (int IconID, SeString Text)? _regularMinionRoulette;

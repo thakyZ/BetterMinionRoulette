@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>1.0.0.0</Version>
+    <Version>1.0.0.1</Version>
     <Company></Company>
     <Authors>Neko Boi Nick</Authors>
     <Description>
@@ -11,33 +11,32 @@
     <PackageProjectUrl>https://github.com/thakyZ/BetterMinionRoulette-Dalamud</PackageProjectUrl>
     <Copyright></Copyright>
     <AssemblyTitle>Better Minion Roulette</AssemblyTitle>
-    <Product>Better Minion Roulette</Product>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Platforms>x64</Platforms>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    <Configurations>Release;Debug</Configurations>
-    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <AssemblyName>$(AssemblyTitle)</AssemblyName>
+    <Title>$(AssemblyTitle)</Title>
+    <Product>$(AssemblyTitle)</Product>
+    <PluginVersion>$(Version)</PluginVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
+    <Configurations>Release;Debug</Configurations>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-    <OutputPath>dist</OutputPath>
+    <LangVersion>latest</LangVersion>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AnalysisLevel>latest-all</AnalysisLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
-    <DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+    <OutputPath>bin\$(Configuration)</OutputPath>
+    <RootNamespace>NekoBoiNick.FFXIV.DalamudPlugin.$(AssemblyTitle.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
@@ -58,6 +57,14 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DalamudLibPath>$(AppData)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsCI)' == 'true'">
+    <Dalamud>$(HOME)/dalamud</Dalamud>
   </PropertyGroup>
 
   <ItemGroup>
@@ -114,7 +121,17 @@
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="Build">
+  <Target Name="CleanOutDir" AfterTargets="Build">
+    <ItemGroup>
+      <DeleteAssemblies Include="$(TargetDir)*.pdb" />
+      <DeleteAssemblies Include="$(TargetDir)$(AssemblyName).deps.json" />
+    </ItemGroup>
+    <Message Text="Deleting @(DeleteAssemblies)" Importance="high" />
+    <Delete Files="@(DeleteAssemblies)" />
+    <RemoveDir Directories="$(TargetDir)\ref\" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="CleanOutDir">
     <ItemGroup>
       <InputAssemblies Include="$(TargetPath)" />
       <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />

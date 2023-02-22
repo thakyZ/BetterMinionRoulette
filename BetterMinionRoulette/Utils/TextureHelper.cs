@@ -6,7 +6,7 @@ using Dalamud.Data;
 
 using ImGuiScene;
 
-namespace BetterMinionRoulette.Util;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 
 internal static class TextureHelper {
   private static readonly Dictionary<string, TextureWrap> _loadedTextures = new();

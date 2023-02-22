@@ -5,7 +5,7 @@ using System.Numerics;
 
 using ImGuiNET;
 
-namespace BetterMinionRoulette.UI;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
 
 internal sealed class WindowManager
 {

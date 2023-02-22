@@ -1,7 +1,7 @@
 ﻿#if DEBUG
 using System.Diagnostics.CodeAnalysis;
 
-namespace BetterMinionRoulette.SubCommands;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
 
 [SuppressMessage("Performance", "CA1812", Justification = "Instantiated via reflection")]
 internal sealed class DebugCommand : SubCommandBase

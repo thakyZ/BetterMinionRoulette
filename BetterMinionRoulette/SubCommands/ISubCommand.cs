@@ -1,4 +1,4 @@
-﻿namespace BetterMinionRoulette.SubCommands;
+﻿namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
 
 internal interface ISubCommand
 {

@@ -4,7 +4,7 @@ using System.Globalization;
 
 using Dalamud.Game.Gui;
 
-namespace BetterMinionRoulette.SubCommands;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
 
 internal abstract class SubCommandBase : ISubCommand
 {

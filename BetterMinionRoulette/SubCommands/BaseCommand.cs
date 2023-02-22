@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace BetterMinionRoulette.SubCommands;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
 
 [SuppressMessage("Performance", "CA1812", Justification = "Instantiated via reflection")]
 internal sealed class BaseCommand : SubCommandBase

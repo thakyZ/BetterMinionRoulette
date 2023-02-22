@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BetterMinionRoulette.Config;
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
 internal class MinionGroup {
   public virtual string Name { get; set; } = "";
