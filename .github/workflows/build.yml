@@ -74,6 +74,7 @@ jobs:
           tag_name: ${{steps.version.outputs.prop}}
           body: ${{ github.events.commits[0].message }}
           files: latest.zip
+          token: ${{ secrets.PAT }}
 
       - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v1
