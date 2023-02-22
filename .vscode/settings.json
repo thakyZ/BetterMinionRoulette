@@ -1,0 +1,20 @@
+{
+  "cSpell.words": [
+    "actionid",
+    "actiontype",
+    "bminionr",
+    "castbar",
+    "namespaceanddescendants",
+    "Newtonsoft",
+    "readycheck"
+  ],
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/objects",
+    ".vscode",
+    ".vscode-insiders",
+    "lib"
+  ]
+}

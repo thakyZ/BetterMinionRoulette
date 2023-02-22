@@ -26,7 +26,7 @@ using Lumina.Excel.GeneratedSheets;
 namespace BetterMinionRoulette;
 
 public sealed class Plugin : IDalamudPlugin {
-  private static BetterMinionRoulette.Plugin _plugin { get; set; } = null!;
+  private static Plugin _plugin { get; set; } = null!;
 
   private bool _isDisposed;
 
@@ -128,7 +128,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
   }
 
-  internal static BetterMinionRoulette.Plugin GetPlugin() {
+  internal static Plugin GetPlugin() {
     return _plugin;
   }
 

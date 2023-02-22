@@ -41,32 +41,33 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <DebugSymbols>false</DebugSymbols>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <WarningLevel>9999</WarningLevel>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <WarningLevel>9999</WarningLevel>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="lib\**" />
-    <None Remove="lib\**" />
+    <Compile Remove="..\lib\**" />
+    <None Remove="..\lib\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="DalamudPackager" Version="2.1.10" />
+    <PackageReference Include="ILRepack" Version="2.0.18" GeneratePathProperty="true" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
       <Private>false</Private>
@@ -92,7 +93,7 @@
       <Private>false</Private>
     </Reference>
     <Reference Include="FFXIVClientStructs">
-      <HintPath>$(PROJECTDIR)\lib\FFXIVClientStructs\bin\$(Configuration)\FFXIVClientStructs.dll</HintPath>
+      <HintPath>$(PROJECTDIR)\..\lib\FFXIVClientStructs\bin\$(Configuration)\FFXIVClientStructs.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <!--<Reference Include="FFXIVClientStructs">
@@ -105,13 +106,23 @@
     <Content Include="BetterMinionRoulette.yaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
+    <Folder Include="images\"/>
+    <Content Include="..\README.md" CopyToOutputDirectory="Always"/>
+    <Content Include="..\LICENSE" CopyToOutputDirectory="Always"/>
+    <Content Include="..\.gitignore" CopyToOutputDirectory="Never"/>
+    <EditorConfigFiles Remove="..\.editorconfig"/>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="images\" />
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <InputAssemblies Include="$(TargetPath)" />
+      <InputAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetPath)" />
+    </ItemGroup>
+    <Exec Command="$(PkgILRepack)\tools\ILRepack.exe /union /lib:$(DalamudLibPath) /out:$(TargetDir)$(TargetFileName) @(InputAssemblies, ' ')" />
+    <ItemGroup>
+      <CleanAssemblies Include="$(TargetDir)*.dll" Exclude="$(TargetDir)$(TargetFileName)" />
+    </ItemGroup>
+    <Delete Files="@(CleanAssemblies)" />
+  </Target>
 </Project>
