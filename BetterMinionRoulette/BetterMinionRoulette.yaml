@@ -1,16 +1,16 @@
-Name: Better Minion Roulette
-InternalName: BetterMinionRoulette
-Author: Neko Boi Nick
-Punchline: Choose which minions show up in the minions roulette.
-Description: |-
+name: Better Minion Roulette
+internal_name: BetterMinionRoulette
+author: Neko Boi Nick
+punchline: Choose which minions show up in the minions roulette.
+description: |-
   Allows any number of mounts to be enabled for the mount roulette, instead of having to choose between the
   "up to 30" and "EVERYTHING" modes supported by the game. Also has (or will have) an option to omit the
   island sanctuary minions from being spawned.
-RepoUrl: https://github.com/thakyZ/BetterMinionRoulette-Dalamud
-ApplicableVersion: any
-Tags:
+repo_url: https://github.com/thakyZ/BetterMinionRoulette-Dalamud
+applicable_version: any
+tags:
   - Minion
   - Utility
-DalamudApiLevel: 8
-IconUrl: https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/BetterMinionRoulette/images/icon.png
-Changelog: Initial release
+dalamud_api_level: 8
+icon_url: https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/BetterMinionRoulette/images/icon.png
+changelog: Initial release
