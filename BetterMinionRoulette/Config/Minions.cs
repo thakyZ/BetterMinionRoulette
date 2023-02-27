@@ -237,10 +237,8 @@ internal sealed class Minions {
       return 0;
     }
 
-#pragma warning disable CA5394 // Do not use insecure randomness
     // no secure randomness required
     var index = _random.Next(availableMinions.Count);
-#pragma warning restore CA5394 // Do not use insecure randomness
 
     return availableMinions[index].Minion.ID;
   }

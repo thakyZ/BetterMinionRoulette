@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Version>1.0.0.1</Version>
+    <Version>1.0.0.2</Version>
     <Company></Company>
     <Authors>Neko Boi Nick</Authors>
     <Description>
@@ -15,7 +15,6 @@
 
   <PropertyGroup>
     <AssemblyTitle>$(Title)</AssemblyTitle>
-    <AssemblyName>$(Title.Replace(" ", ""))</AssemblyName>
     <Product>$(Title)</Product>
     <PluginVersion>$(Version)</PluginVersion>
     <FileVersion>$(Version)</FileVersion>
@@ -35,11 +34,11 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>bin\$(Configuration)</OutputPath>
     <RootNamespace>NekoBoiNick.FFXIV.DalamudPlugin.$(Title.Replace(" ", ""))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <AssemblyName>$(Title.Replace(" ", ""))</AssemblyName>
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
@@ -50,10 +49,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <AssemblyName>$(Title.Replace(" ", ""))2</AssemblyName>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\$(Title.Replace(" ", ""))\</OutputPath>
+    <BaseOutputPath>$(AppData)\XIVLauncher\devPlugins\$(Title.Replace(" ", ""))\</BaseOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -70,6 +71,7 @@
   <ItemGroup>
     <Compile Remove="..\lib\**" />
     <None Remove="..\lib\**" />
+    <None Remove="bin\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -109,10 +111,19 @@
     </Reference>-->
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="BetterMinionRoulette.yaml">
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Content Include="BetterMinionRoulette2.yaml" Link="BetterMinionRoulette.yaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <Content Include="BetterMinionRoulette.yaml" Link="BetterMinionRoulette.yaml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="images\"/>
     <Content Include="..\README.md" CopyToOutputDirectory="Always"/>
     <Content Include="..\LICENSE" CopyToOutputDirectory="Always"/>

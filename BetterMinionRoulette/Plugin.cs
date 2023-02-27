@@ -64,6 +64,7 @@ public sealed class Plugin : IDalamudPlugin {
   private readonly Hook<UseActionHandler>? _useActionHook;
   internal readonly WindowManager WindowManager;
   private (bool hide, uint actionID) _hideAction;
+  internal static Plugin _instance { get; private set; } = null!;
   internal ISubCommand _command;
 
   public unsafe Plugin(
@@ -78,6 +79,7 @@ public sealed class Plugin : IDalamudPlugin {
     FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
     PluginInterface = pluginInterface;
+    _instance = this;
     SigScanner = sigScanner;
     CommandManager = commandManager;
 
@@ -88,8 +90,6 @@ public sealed class Plugin : IDalamudPlugin {
     ChatGui = chatGui;
 
     _plugin = this;
-
-    CastBarHelper.Plugin = this;
 
     WindowManager = new WindowManager(this);
     Minions.WindowManager = WindowManager;
@@ -119,7 +119,6 @@ public sealed class Plugin : IDalamudPlugin {
 
       _useActionHook = Hook<UseActionHandler>.FromAddress(renderAddress, OnUseAction);
       _useActionHook.Enable();
-      CastBarHelper.Enable();
       ClientState.Login += ClientState_Login;
       ClientState.TerritoryChanged += ClientState_TerritoryChanged;
     } catch {
@@ -157,7 +156,7 @@ public sealed class Plugin : IDalamudPlugin {
 
   [Conditional("DEBUG")]
   internal static void Log(string message) {
-    CastBarHelper.Plugin!.WindowManager.DebugWindow.AddText(message);
+    Plugin._instance.WindowManager.DebugWindow.AddText(message);
   }
 
   internal static void SaveConfig(Configuration configuration) {
@@ -222,7 +221,6 @@ public sealed class Plugin : IDalamudPlugin {
     var isRouletteActionID = actionID is 10;
     var oldActionType = actionType;
     var oldActionId = actionID;
-    PluginLog.Information($"groupName {groupName ?? "Null"}");
     if (groupName is not null) {
       var newActionID = Minions.GetInstance(groupName)!.GetRandom(actionManager);
       if (newActionID != 0) {
@@ -235,18 +233,6 @@ public sealed class Plugin : IDalamudPlugin {
       oldActionId = _hideAction.actionID;
       oldActionType = ActionType.General;
       isRouletteActionID = true;
-    }
-
-    switch (oldActionType) {
-      case ActionType.General when isRouletteActionID && actionType != oldActionType:
-        CastBarHelper.Show = false;
-        CastBarHelper.IsFlyingRoulette = oldActionId == 10;
-        CastBarHelper.MinionID = actionID;
-        break;
-      case ActionType.Unk_8:
-        CastBarHelper.Show = true;
-        CastBarHelper.MinionID = actionID;
-        break;
     }
 
     var result = _useActionHook!.Original(actionManager, actionType, actionID, targetID, a4, a5, a6, a7);
@@ -271,9 +257,6 @@ public sealed class Plugin : IDalamudPlugin {
       TextureHelper.Dispose();
 
       _ = CommandManager.RemoveHandler(CommandText);
-
-      CastBarHelper.Plugin = null;
-      CastBarHelper.Disable();
       // TODO: free unmanaged resources (unmanaged objects) and override finalizer
       // TODO: set large fields to null
       _isDisposed = true;
