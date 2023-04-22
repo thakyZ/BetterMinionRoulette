@@ -1,29 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-using Dalamud.Data;
+﻿using Dalamud.Data;
 
 using ImGuiScene;
 
-namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-internal static class TextureHelper {
-  private static readonly Dictionary<string, TextureWrap> _loadedTextures = new();
-  private static readonly Dictionary<uint, TextureWrap> _loadedIconTextures = new();
+namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
-  private static DataManager DataManager => Plugin.GetPlugin().DataManager;
+internal sealed class TextureHelper {
+  private readonly Dictionary<string, TextureWrap> _loadedTextures = new();
+  private readonly Dictionary<uint, TextureWrap> _loadedIconTextures = new();
+  private readonly Services _services;
+  private DataManager DataManager => _services.DataManager;
 
-  public static nint LoadUldTexture(string name) {
+  public TextureHelper(Services services) {
+    _services = services;
+  }
+
+  public nint LoadUldTexture(string name) {
     string path = $"ui/uld/{name}_hr1.tex";
     return LoadTexture(_loadedTextures, path, DataManager.GetImGuiTexture);
   }
 
-  public static nint LoadIconTexture(uint id) {
+  public nint LoadIconTexture(uint id) {
     return LoadTexture(_loadedIconTextures, id, DataManager.GetImGuiTextureIcon);
   }
 
-  public static void Dispose() {
+  public void Dispose() {
     var values = _loadedTextures.Values.Concat(_loadedIconTextures.Values).ToList();
     _loadedTextures.Clear();
     _loadedIconTextures.Clear();

@@ -1,166 +1,140 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
-
-using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
-using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 
-using FFXIVClientStructs.FFXIV.Client.Game;
-
-using Lumina;
 using Lumina.Excel.GeneratedSheets;
+
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette;
 
 public sealed class Plugin : IDalamudPlugin {
-  private static Plugin _plugin { get; set; } = null!;
-
   private bool _isDisposed;
 
   public string Name => "Better Minion Roulette";
 
-  private const string CommandText = "/bminionr";
+  private const string COMMAND_TEXT  = "/bminionr";
+
+  private const string MINION_COMMAND_TEXT  = "/pminion";
 
   ////public const string CommandHelpMessage = $"Does all the things. Type \"{CommandText} help\" for more information.";
-  public const string CommandHelpMessage = "Open the config window.";
+  public const string COMMAND_HELP_MESSAGE = "Opens the config window.";
 
-  internal DalamudPluginInterface PluginInterface { get; init; }
+  internal readonly Configuration Configuration;
 
-  internal SigScanner SigScanner { get; init; }
-
-  internal CommandManager CommandManager { get; init; }
-
-  internal GameGui GameGui { get; init; }
-
-  internal DataManager DataManager { get; init; }
-  internal GameData GameData {
-    get {
-      if (DataManager is not null) {
-        return DataManager.GameData;
-      }
-      return new GameData("");
-    }
+  internal CharacterConfig? CharacterConfig {
+    get => _actionHandler.CharacterConfig;
+    private set => _actionHandler.CharacterConfig = value;
   }
 
-  internal ChatGui ChatGui { get; init; }
-
-  internal ClientState ClientState { get; init; }
-
-  internal Configuration Configuration { get; private set; }
-
-  private readonly Hook<UseActionHandler>? _useActionHook;
+  private readonly Services _services;
+  private readonly ActionHandler _actionHandler;
   internal readonly WindowManager WindowManager;
-  private (bool hide, uint actionID) _hideAction;
-  internal static Plugin _instance { get; private set; } = null!;
-  internal ISubCommand _command;
+  internal readonly TextureHelper TextureHelper;
+  internal readonly MinionRegistry MinionRegistry;
+  internal readonly CharacterManager CharacterManager;
+  private readonly ISubCommand _command;
 
-  public unsafe Plugin(
-    DalamudPluginInterface pluginInterface,
-    SigScanner sigScanner,
-    CommandManager commandManager,
-    GameGui gameGui,
-    DataManager dataManager,
-    ChatGui chatGui,
-    ClientState clientState) {
-    FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace();
-    FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+  public unsafe Plugin(DalamudPluginInterface pluginInterface) {
+    if (pluginInterface is null) {
+      throw new ArgumentNullException(nameof(pluginInterface));
+    }
 
-    PluginInterface = pluginInterface;
-    _instance = this;
-    SigScanner = sigScanner;
-    CommandManager = commandManager;
+    _services = new Services(pluginInterface, this);
+    TextureHelper = new TextureHelper(_services);
+    MinionRegistry = new MinionRegistry(_services);
 
-    ClientState = clientState;
-
-    GameGui = gameGui;
-    DataManager = dataManager;
-    ChatGui = chatGui;
-
-    _plugin = this;
-
-    WindowManager = new WindowManager(this);
-    Minions.WindowManager = WindowManager;
-    PluginInterface.UiBuilder.Draw += WindowManager.Draw;
+    WindowManager = new WindowManager(this, _services);
+    pluginInterface.UiBuilder.Draw += WindowManager.Draw;
 
     try {
-      Configuration config = PluginInterface.GetPluginConfig() as Configuration ?? Configuration.Init();
-      config.Initialize(_plugin);
-      LoadCharacter(config);
-      config.Migrate();
+      _actionHandler = new ActionHandler(_services, WindowManager, MinionRegistry);
+      Configuration config = pluginInterface.GetPluginConfig() as Configuration ?? Configuration.Init();
+      ConfigVersionManager.DoMigration(config);
       SaveConfig(config);
 
       Configuration = config;
+      CharacterManager = new CharacterManager(_services, config);
+
+      _services.Login += OnLogin;
+      _services.TerritoryChanged += OnTerritoryChanged;
+      if (_services.ClientState.LocalPlayer is not null) {
+        OnLogin(this, EventArgs.Empty);
+      }
 
       _command = InitCommands();
 
-      PluginInterface.UiBuilder.OpenConfigUi += WindowManager.OpenConfigWindow;
+      pluginInterface.UiBuilder.OpenConfigUi += WindowManager.OpenConfigWindow;
 
-      _ = CommandManager.AddHandler(CommandText, new CommandInfo(HandleCommand) { HelpMessage = CommandHelpMessage });
-
-      nint renderAddress = (nint)ActionManager.Addresses.UseAction.Value;
-
-      if (renderAddress is 0) {
-        WindowManager.DebugWindow.Broken("Unable to load UseAction address");
-        return;
-      }
-
-      _useActionHook = Hook<UseActionHandler>.FromAddress(renderAddress, OnUseAction);
-      _useActionHook.Enable();
-      ClientState.Login += ClientState_Login;
-      ClientState.TerritoryChanged += ClientState_TerritoryChanged;
+      _ = _services.CommandManager.AddHandler(
+          COMMAND_TEXT,
+          new CommandInfo(HandleCommand) { HelpMessage = COMMAND_HELP_MESSAGE });
+      _ = _services.CommandManager.AddHandler(
+          MINION_COMMAND_TEXT,
+          new CommandInfo(_actionHandler.HandleMinionCommand) {
+            HelpMessage = $"Minion a random minion from the specified group, e.g. \"{MINION_COMMAND_TEXT} My Group\" summons a minion from the \"My Group\" group"
+          });
     } catch {
       Dispose();
       throw;
     }
   }
 
-  internal static Plugin GetPlugin() {
-    return _plugin;
-  }
+  private void ImportCharacterConfig(int? @override = null) {
+    switch (@override ?? Configuration.NewCharacterHandling) {
+      case Configuration.NewCharacterHandlingModes.IMPORT:
+        _ = CharacterManager.Import(Configuration.DUMMY_LEGACY_CONFIG_ID);
+        break;
+      case Configuration.NewCharacterHandlingModes.BLANK:
+        return;
+      case Configuration.NewCharacterHandlingModes.ASK:
+      default: /* default to "ask" for invalid values */
+        WindowManager.OpenDialog(new ConfirmImportCharacterDialog(WindowManager, ConfirmAction));
+        break;
+    }
 
-  private void ClientState_Login(object? sender, EventArgs e) {
-    LoadCharacter();
-  }
+    void ConfirmAction(bool import, bool remember) {
+      int mode = import
+                ? Configuration.NewCharacterHandlingModes.IMPORT
+                : Configuration.NewCharacterHandlingModes.BLANK;
+      if (import) {
+        ImportCharacterConfig(mode);
+      }
 
-  private void ClientState_TerritoryChanged(object? sender, ushort territoryID) {
-    var territoryTypeSheet = DataManager.Excel.GetSheet<TerritoryType>()!;
-    var islandSanctuary = territoryTypeSheet.First(x => x.Name == "h1m2");
-    if (islandSanctuary is not null) {
-      Minions.RefreshIsland();
+      if (remember) {
+        Configuration.NewCharacterHandling = mode;
+      }
     }
   }
 
-  private void LoadCharacter() {
-    Configuration = Configuration.LoadOnLogin(Configuration);
-    SaveConfig(Configuration);
-    Minions.Load(Configuration);
-  }
-  private void LoadCharacter(Configuration config) {
-    Configuration = Configuration.LoadOnLogin(config);
-    SaveConfig(config);
-    Minions.Load(config);
-  }
-
-  [Conditional("DEBUG")]
-  internal static void Log(string message) {
-    Plugin._instance.WindowManager.DebugWindow.AddText(message);
+  private void OnLogin(object? sender, EventArgs e) {
+    if (_services.ClientState.LocalPlayer is { } player) {
+      CharacterConfig = CharacterManager.GetCharacterConfig(_services.ClientState.LocalContentId, player);
+      if (CharacterConfig.IsNew && Configuration.CharacterConfigs.ContainsKey(Configuration.DUMMY_LEGACY_CONFIG_ID)) {
+        ImportCharacterConfig();
+        CharacterConfig.IsNew = false;
+      }
+    }
   }
 
-  internal static void SaveConfig(Configuration configuration) {
-    GetPlugin().PluginInterface.SavePluginConfig(configuration);
+  private void OnTerritoryChanged(object? sender, ushort territoryID) {
+    var territoryTypeSheet = _services.DataManager.Excel.GetSheet<TerritoryType>()!;
+    var islandSanctuary = territoryTypeSheet.First(x => x.Name == "h1m2");
+    if (islandSanctuary is not null) {
+      MinionRegistry.RefreshIsland();
+    }
+  }
+
+  internal void SaveConfig(Configuration configuration) {
+    _services.DalamudPluginInterface.SavePluginConfig(configuration);
   }
 
   private void HandleCommand(string command, string arguments) {
@@ -172,16 +146,16 @@ public sealed class Plugin : IDalamudPlugin {
                   : new string[] { element }) // Keep the entire item
           .SelectMany(element => element).ToArray();
     try {
-      var success = _command.Execute(parts);
+      bool success = _command.Execute(parts);
 
       if (!success) {
-        ChatGui.PrintError($"Invalid command: {command} {arguments}");
+        _services.ChatGui.PrintError($"Invalid command: {command} {arguments}");
       }
     } catch (Exception e) {
-      ChatGui.PrintError(e.Message);
+      _services.ChatGui.PrintError(e.Message);
       throw;
     } finally {
-      ChatGui.UpdateQueue();
+      _services.ChatGui.UpdateQueue();
     }
   }
 
@@ -191,82 +165,49 @@ public sealed class Plugin : IDalamudPlugin {
             .Select(x => (ISubCommand)Activator.CreateInstance(x)!)
             .ToList();
     Dictionary<string, ISubCommand> commands = new(StringComparer.InvariantCultureIgnoreCase);
-    foreach (var command in allCommands) {
-      var fullCommand = $"{command.ParentCommand} {command.CommandName}".Trim();
+    foreach (ISubCommand? command in allCommands) {
+      string fullCommand = (command.ParentCommand + " " + command.CommandName).Trim();
       commands.Add(fullCommand, command);
       command.Plugin = this;
-      command.FullCommand = $"{CommandText} {command.ParentCommand}".Trim();
+      command.FullCommand = (COMMAND_TEXT + " " + command.ParentCommand).Trim();
     }
 
-    foreach (var command in allCommands) {
+    foreach (ISubCommand? command in allCommands) {
       commands[command.ParentCommand ?? string.Empty].AddSubCommand(command);
     }
 
     return commands[string.Empty];
   }
 
-  private unsafe byte OnUseAction(ActionManager* actionManager, ActionType actionType, uint actionID, long targetID, uint a4, uint a5, uint a6, void* a7) {
-    var hideAction = _hideAction;
-    _hideAction = (false, 0);
-
-    if (!Configuration.Enabled) {
-      return _useActionHook!.Original(actionManager, actionType, actionID, targetID, a4, a5, a6, a7);
-    }
-
-    string? groupName = (actionID, actionType) switch {
-      (10, ActionType.General) => Configuration.DefaultGroupName,
-      _ => null,
-    };
-
-    var isRouletteActionID = actionID is 10;
-    var oldActionType = actionType;
-    var oldActionId = actionID;
-    if (groupName is not null) {
-      var newActionID = Minions.GetInstance(groupName)!.GetRandom(actionManager);
-      if (newActionID != 0) {
-        actionType = ActionType.Unk_8;
-        actionID = newActionID;
-      }
-    }
-
-    if (hideAction.hide) {
-      oldActionId = _hideAction.actionID;
-      oldActionType = ActionType.General;
-      isRouletteActionID = true;
-    }
-
-    var result = _useActionHook!.Original(actionManager, actionType, actionID, targetID, a4, a5, a6, a7);
-
-    return result;
-  }
-
-  public unsafe delegate byte UseActionHandler(ActionManager* actionManager, ActionType actionType, uint actionID, long targetID = 3758096384U, uint a4 = 0U, uint a5 = 0U, uint a6 = 0U, void* a7 = default);
-
   private void Dispose(bool disposing) {
-    if (!_isDisposed && disposing) {
+    if (!_isDisposed) {
+      if (disposing) {
+        // TODO: dispose managed state (managed objects)
+      }
+
       SaveConfig(Configuration);
 
-      _useActionHook?.Disable();
-      _useActionHook?.Dispose();
+      _services.DalamudPluginInterface.UiBuilder.Draw -= WindowManager.Draw;
+      _services.DalamudPluginInterface.UiBuilder.OpenConfigUi -= WindowManager.OpenConfigWindow;
 
-      PluginInterface.UiBuilder.Draw -= WindowManager.Draw;
-      PluginInterface.UiBuilder.OpenConfigUi -= WindowManager.OpenConfigWindow;
-      ClientState.Login -= ClientState_Login;
-      ClientState.TerritoryChanged -= ClientState_TerritoryChanged;
+      _services.Login -= OnLogin;
+      _services.TerritoryChanged -= OnTerritoryChanged;
 
       TextureHelper.Dispose();
 
-      _ = CommandManager.RemoveHandler(CommandText);
+      _ = _services.CommandManager.RemoveHandler(COMMAND_TEXT);
+      _actionHandler.Dispose();
+
       // TODO: free unmanaged resources (unmanaged objects) and override finalizer
       // TODO: set large fields to null
       _isDisposed = true;
     }
   }
 
-  // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+  // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
   ~Plugin() {
     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-    Dispose(disposing: true);
+    Dispose(disposing: false);
   }
 
   public void Dispose() {

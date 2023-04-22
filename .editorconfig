@@ -139,54 +139,56 @@ csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 csharp_using_directive_placement = outside_namespace:suggestion
 csharp_prefer_simple_using_statement = false:suggestion
-csharp_style_namespace_declarations = block_scoped:silent
-csharp_style_expression_bodied_lambdas = when_on_single_line:suggestion
+csharp_style_namespace_declarations = file_scoped:silent
+csharp_style_expression_bodied_lambdas = true:warning
 csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
 csharp_indent_case_contents_when_block = true
-###############################
-# VB Coding Conventions       #
-###############################
 
-# IDE0055: Fix formatting
-dotnet_diagnostic.IDE0055.severity = none
-
-# S125: Sections of code should not be commented out
-dotnet_diagnostic.S125.severity = none
-
-# S3881: "IDisposable" should be implemented correctly
-dotnet_diagnostic.S3881.severity = none
-
-# S2292: Trivial properties should be auto-implemented
-dotnet_diagnostic.S2292.severity = none
-
-# S2933: Fields that are only assigned in the constructor should be "readonly"
-dotnet_diagnostic.S2933.severity = none
-
-# IDE0058: Expression value is never used
-dotnet_diagnostic.IDE0058.severity = silent
-csharp_style_prefer_method_group_conversion = silent
-csharp_style_prefer_top_level_statements = silent
+csharp_style_prefer_method_group_conversion = true:silent
+csharp_style_prefer_top_level_statements = true:silent
 csharp_style_prefer_null_check_over_type_check = true:suggestion
 csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_index_operator = false:suggestion
 csharp_style_prefer_range_operator = false:suggestion
 csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 
-# IDE0250: Make struct 'readonly'
-dotnet_diagnostic.IDE0250.severity = none
+## IDE0055: Fix formatting
+#dotnet_diagnostic.IDE0055.severity = none
+
+## S125: Sections of code should not be commented out
+#dotnet_diagnostic.S125.severity = none
+
+## S3881: "IDisposable" should be implemented correctly
+#dotnet_diagnostic.S3881.severity = none
+
+## S2292: Trivial properties should be auto-implemented
+#dotnet_diagnostic.S2292.severity = none
+
+## S2933: Fields that are only assigned in the constructor should be "readonly"
+#dotnet_diagnostic.S2933.severity = none
+
+## IDE0058: Expression value is never used
+#dotnet_diagnostic.IDE0058.severity = silent
+
+## IDE0250: Make struct 'readonly'
+#dotnet_diagnostic.IDE0250.severity = none
 
 # SYSLIB1045: Convert to 'GeneratedRegexAttribute'.
 dotnet_diagnostic.SYSLIB1045.severity = none
 
+## CS8669: The annotation for nullable reference types should only be used in code within a '#nullable' context
+#dotnet_diagnostic.CS8669.severity = none
+
+# CA5394: Do not use insecure randomness
+dotnet_diagnostic.CA5394.severity = warning
+# IDE0053: Use expression body for lambda expressions
+dotnet_diagnostic.IDE0053.severity = warning
+csharp_prefer_static_local_function = false:suggestion
+
+###############################
+# VB Coding Conventions       #
+###############################
+
 [*.vb]
 # Modifier preferences
 visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
-
-# Ignore paths
-[lib/**]
-# Treat as generated code.
-# Found at: https://stackoverflow.com/a/71414607/1112800
-generated_code = true
-
-# CS8669: The annotation for nullable reference types should only be used in code within a '#nullable' context
-dotnet_diagnostic.CS8669.severity = none

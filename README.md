@@ -15,14 +15,14 @@ Things I intend to implement at some point in the future. Before posting a featu
 
 - Minion Groups
   - For summoning a minion from a random group.
-  - To treat as a single mount. Got 85 different flavours of "horse" but only the company chocobo otherwise? Put the horses in a group and treat it as a single mount for a 50/50 chance of getting "a random horse" or the chocobo.
+  - To treat as a single minion. Got 85 different flavours of "horse" but only the company chocobo otherwise? Put the horses in a group and treat it as a single minion for a 50/50 chance of getting "a random horse" or the chocobo.
 - Summon criteria
-  - Summon mount with specified number of seats (to move the whole party).
-  - Summon mount with/without custom BGM.
-  - Summon fastest mount (i.e. SDS Fenrir if owned and riding map not unlocked, random otherwise)
+  - Summon minion with specified number of seats (to move the whole party).
+  - Summon minion with/without custom BGM.
+  - Summon fastest minion (i.e. SDS Fenrir if owned and riding map not unlocked, random otherwise)
   - Maybe more
 
 ## Credits
 
-A lot of this code is heavily borrowed from [CMDRNuffin/BetterMountRoulette](https://github.com/CMDRNuffin/BetterMountRoulette).   
+A lot of this code is heavily borrowed from [CMDRNuffin/BetterMinionRoulette](https://github.com/CMDRNuffin/BetterMinionRoulette).   
 As per usual this code follows the Dalamud License.

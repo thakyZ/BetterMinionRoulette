@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <Target Name="PackagePlugin" AfterTargets="PostBuild">
-    <DalamudPackager
-        ProjectDir="$(ProjectDir)"
-        OutputPath="$(OutputPath)"
-        AssemblyName="$(AssemblyName)"
-        ManifestType="yaml"
-        MakeZip="true"
-        Include="$(AssemblyName).dll;
-            $(AssemblyName).json"/>
-  </Target>  
+  <Target Name="PackagePlugin-Release" AfterTargets="CleanOutDir" Condition=" '$(Configuration)' == 'Release' ">
+    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" ManifestType="yaml" MakeZip="True" Include="LICENSE;$(AssemblyName).dll;$(AssemblyName).pdb;$(AssemblyName).json" />
+  </Target>
+  <Target Name="PackagePlugin-Debug" AfterTargets="CleanOutDir" Condition=" '$(Configuration)' == 'Debug' ">
+    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" ManifestType="yaml" MakeZip="False" />
+  </Target>
 </Project>

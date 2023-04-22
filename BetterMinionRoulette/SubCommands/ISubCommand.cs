@@ -12,6 +12,8 @@ internal interface ISubCommand
 
     public Plugin Plugin { get; set; }
 
+    public Services Services { get; set; }
+
     void AddSubCommand(ISubCommand child);
 
     bool Execute(string[] parameter);
