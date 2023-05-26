@@ -8,7 +8,7 @@ using Dalamud.Logging;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.Interop;
-
+using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
@@ -82,6 +82,9 @@ internal sealed class MinionRegistry {
 
   public void RefreshIsland() {
     PluginLog.Debug("Refreshing island spawned");
+    if (_services.ClientState.TerritoryType != 1105u) {
+      return;
+    }
     foreach (var minion in _minions) {
       minion.Island = GameFunctions.IsMinionOnIsland(minion, minion.Island);
     }
@@ -89,7 +92,7 @@ internal sealed class MinionRegistry {
 
   public IEnumerable<MinionData> GetAllMinions() {
     return from minion in _services.GameData.GetExcelSheet<Companion>()
-           where minion.Order > 0 && minion.Icon != 0 /* valid Minions only */
+           where minion.Icon != 0 /* valid Minions only */
            orderby minion.Order
            select new MinionData(_services.TextureHelper, minion.Singular) {
              IconID = minion.Icon,
@@ -98,28 +101,20 @@ internal sealed class MinionRegistry {
            };
   }
 
-  public List<MinionData> Filter(List<MinionData> minions, string filterText, bool omitIsland) {
-    return AsList(FilteredMinions(minions, filterText, omitIsland));
+  public List<MinionData> Filter(List<MinionData> minions, string filterText) {
+    return AsList(FilteredMinions(minions, filterText));
   }
 
   private static List<T> AsList<T>(IEnumerable<T> source) {
     return source as List<T> ?? source.ToList();
   }
 
-  private IEnumerable<MinionData> FilteredMinions(List<MinionData> _minions, string filter, bool omitIsland) {
-    IEnumerable<MinionData> minions = _minions;
-    List<MinionData> unlockedMinions = GetUnlockedMinions(omitIsland);
-    minions = minions.Where(unlockedMinions.Contains);
-
+  private IEnumerable<MinionData> FilteredMinions(IEnumerable<MinionData> _minions, string filter) {
     if (!string.IsNullOrEmpty(filter)) {
-      minions = minions.Where(x => x.Name.RawString.Contains(filter, StringComparison.CurrentCultureIgnoreCase));
+      _minions = _minions.Where(x => x.Name.RawString.Contains(filter, StringComparison.CurrentCultureIgnoreCase));
     }
 
-    if (omitIsland) {
-      minions = minions.Where(x => !x.Island);
-    }
-
-    return minions;
+    return _minions;
   }
 
   public List<MinionData> GetUnlockedMinions(bool omitIsland) {
