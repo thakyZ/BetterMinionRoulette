@@ -209,7 +209,7 @@ internal sealed class ConfigWindow : IWindow {
     }
 
     _ = ImGui.InputText("Search", ref _search, 64);
-    unlockedMinions = _plugin.MinionRegistry.Filter(unlockedMinions, _search, characterConfig.OmitIslandMinions);
+    unlockedMinions = _plugin.MinionRegistry.Filter(unlockedMinions, _search);
 
     int pages = MinionRenderer.GetPageCount(unlockedMinions.Count);
     if (pages == 0 && unlockedMinions.Count == 0 && string.IsNullOrEmpty(_search)) {
