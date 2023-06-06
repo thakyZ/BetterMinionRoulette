@@ -1,12 +1,14 @@
-﻿using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
-using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using Dalamud.Interface.Windowing;
 
 using ImGuiNET;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
 
@@ -33,13 +35,13 @@ internal sealed class ConfigWindow : IWindow {
   public override bool Equals(object? obj) {
     return obj is ConfigWindow;
   }
-
+  
   public void Open() {
     _isOpen = true;
     _plugin.MinionRegistry.RefreshUnlocked();
     _plugin.MinionRegistry.RefreshIsland();
   }
-
+  
   public void Draw() {
     if (ImGui.Begin("Better Minion Roulette", ref _isOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
       if (_plugin.CharacterConfig is not CharacterConfig characterConfig) {
@@ -209,7 +211,7 @@ internal sealed class ConfigWindow : IWindow {
     }
 
     _ = ImGui.InputText("Search", ref _search, 64);
-    unlockedMinions = _plugin.MinionRegistry.Filter(unlockedMinions, _search);
+    unlockedMinions = MinionRegistry.Filter(unlockedMinions, _search);
 
     int pages = MinionRenderer.GetPageCount(unlockedMinions.Count);
     if (pages == 0 && unlockedMinions.Count == 0 && string.IsNullOrEmpty(_search)) {
@@ -240,7 +242,7 @@ internal sealed class ConfigWindow : IWindow {
                           (null, false) => "currently selected minions",
                           _ => "minions on the current page",
                         };
-            #pragma warning disable IDE0053 // Use expression body for lambda expressions
+#pragma warning disable IDE0053 // Use expression body for lambda expressions
             // commented-out code needs to be preserved (for now)
             _plugin.WindowManager.ConfirmYesNo(
                 "Are you sure?",
@@ -252,7 +254,7 @@ internal sealed class ConfigWindow : IWindow {
                                   info.Select == group.IncludedMeansActive,
                                   info.Page);
                 });
-            #pragma warning restore IDE0053 // Use expression body for lambda expressions
+#pragma warning restore IDE0053 // Use expression body for lambda expressions
           }
 
           ImGui.EndTabItem();

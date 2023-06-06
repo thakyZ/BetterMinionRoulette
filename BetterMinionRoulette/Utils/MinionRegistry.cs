@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using Dalamud.Logging;
 
@@ -82,11 +85,11 @@ internal sealed class MinionRegistry {
 
   public void RefreshIsland() {
     PluginLog.Debug("Refreshing island spawned");
-    if (_services.ClientState.TerritoryType != 1105u) {
+    if (_services.ClientState.TerritoryType != 1055u) {
       return;
     }
     foreach (var minion in _minions) {
-      minion.Island = GameFunctions.IsMinionOnIsland(minion, minion.Island);
+      minion.Island = GameFunctions.IsMinionOnIsland(minion.ID, minion.Island);
     }
   }
 
@@ -101,7 +104,7 @@ internal sealed class MinionRegistry {
            };
   }
 
-  public List<MinionData> Filter(List<MinionData> minions, string filterText) {
+  public static List<MinionData> Filter(List<MinionData> minions, string filterText) {
     return AsList(FilteredMinions(minions, filterText));
   }
 
@@ -109,7 +112,7 @@ internal sealed class MinionRegistry {
     return source as List<T> ?? source.ToList();
   }
 
-  private IEnumerable<MinionData> FilteredMinions(IEnumerable<MinionData> _minions, string filter) {
+  private static IEnumerable<MinionData> FilteredMinions(IEnumerable<MinionData> _minions, string filter) {
     if (!string.IsNullOrEmpty(filter)) {
       _minions = _minions.Where(x => x.Name.RawString.Contains(filter, StringComparison.CurrentCultureIgnoreCase));
     }

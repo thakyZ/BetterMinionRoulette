@@ -7,7 +7,7 @@
       "up to 30" and "EVERYTHING" modes supported by the game. Also has (or will have) an option to omit the
       island sanctuary minions from being spawned.
     </Description>
-    <PackageProjectUrl>https://github.com/thakyZ/BetterMinionRoulette-Dalamud</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/thakyZ/BetterMinionRoulette</PackageProjectUrl>
     <Copyright></Copyright>
     <RootNamespace>NekoBoiNick.FFXIV.DalamudPlugin.$(MSBuildProjectName)</RootNamespace>
     <Title>Better Minion Roulette</Title>
@@ -61,8 +61,8 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <AssemblyName>$(MSBuildProjectName)2</AssemblyName>
     <Optimize>False</Optimize>
-    <OutputPath>$(AppData)\XIVLauncher\devPlugins\$(MSBuildProjectName)\</OutputPath>
-    <BaseOutputPath>$(AppData)\XIVLauncher\devPlugins\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</OutputPath>
+    <BaseOutputPath>$(DalamudDevPlugins)\$(MSBuildProjectName)\</BaseOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -104,6 +104,11 @@
       <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <!--<Reference Include="FFXIVClientStructs">
+      <HintPath>..\lib\FFXIVClientStructs\bin\Release\FFXIVClientStructs.dll</HintPath>
+      <Private>True</Private>
+    </Reference>-->
+    <!--<ProjectReference Include="..\lib\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" />-->
     <Reference Include="Newtonsoft.Json">
       <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>

@@ -104,7 +104,7 @@ internal sealed class CharacterManager {
   private CharacterConfig? LoadCharacterConfig(ulong playerID) {
     if (_configuration.CharacterConfigs.TryGetValue(playerID, out CharacterConfigEntry? cce)) {
       CharacterConfig? res = playerID == Configuration.DUMMY_LEGACY_CONFIG_ID
-                ? LoadLegacyCharacterConfig()
+                ? LoadCharacterConfig(cce) //LoadLegacyCharacterConfig()
                 : LoadCharacterConfig(cce);
       if (res is not null) {
         return res;
@@ -114,7 +114,7 @@ internal sealed class CharacterManager {
     return null;
   }
 
-  private CharacterConfig LoadLegacyCharacterConfig() {
+  /*private CharacterConfig LoadLegacyCharacterConfig() {
     CharacterConfig result = new() {
       MinionRouletteGroup = _configuration.MinionRouletteGroup,
     };
@@ -152,7 +152,7 @@ internal sealed class CharacterManager {
       };
 
       groups.Add(newGroup);
-      if (newGroup.IncludedMeansActive /* Previously "IncludeNewMinions" */) {
+      if (newGroup.IncludedMeansActive /* Previously "IncludeNewMinions" *//*) {
         newGroup.IncludedMinions.UnionWith(includedMinions);
       } else {
         // "IncludeNewMinions" meant we would just save all non-unlocked minions as enabled
@@ -161,7 +161,7 @@ internal sealed class CharacterManager {
         newGroup.IncludedMinions.ExceptWith(includedMinions);
       }
     }
-  }
+  }*/
 
   private void SaveCurrentCharacterConfig(CharacterConfigEntry entry) {
     if (_characterConfig is { } charConfig) {

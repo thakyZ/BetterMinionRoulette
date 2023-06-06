@@ -14,8 +14,6 @@ using Lumina;
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette;
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
-  Justification = "These Plugin Services still need to be able to be set by Dalamud.")]
 internal sealed class Services {
   internal readonly DalamudPluginInterface DalamudPluginInterface;
 

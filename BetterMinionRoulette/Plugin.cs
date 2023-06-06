@@ -23,7 +23,7 @@ public sealed class Plugin : IDalamudPlugin {
 
   private const string COMMAND_TEXT  = "/bminionr";
 
-  private const string MINION_COMMAND_TEXT  = "/pminion";
+  private const string MINION_COMMAND_TEXT  = "/bminiong";
 
   ////public const string CommandHelpMessage = $"Does all the things. Type \"{CommandText} help\" for more information.";
   public const string COMMAND_HELP_MESSAGE = "Opens the config window.";
@@ -51,7 +51,7 @@ public sealed class Plugin : IDalamudPlugin {
     _services = new Services(pluginInterface, this);
     TextureHelper = new TextureHelper(_services);
     MinionRegistry = new MinionRegistry(_services);
-
+    
     WindowManager = new WindowManager(this, _services);
     pluginInterface.UiBuilder.Draw += WindowManager.Draw;
 
@@ -71,7 +71,7 @@ public sealed class Plugin : IDalamudPlugin {
       }
 
       _command = InitCommands();
-
+      
       pluginInterface.UiBuilder.OpenConfigUi += WindowManager.OpenConfigWindow;
 
       _ = _services.CommandManager.AddHandler(
@@ -80,8 +80,40 @@ public sealed class Plugin : IDalamudPlugin {
       _ = _services.CommandManager.AddHandler(
           MINION_COMMAND_TEXT,
           new CommandInfo(_actionHandler.HandleMinionCommand) {
-            HelpMessage = $"Minion a random minion from the specified group, e.g. \"{MINION_COMMAND_TEXT} My Group\" summons a minion from the \"My Group\" group"
+            HelpMessage = $"Summon a random minion from the specified group, e.g. \"{MINION_COMMAND_TEXT} My Group\" summons a minion from the \"My Group\" group"
           });
+#if DEBUG
+      _ = _services.CommandManager.AddHandler(
+          "/bminiondbg",
+          new CommandInfo((string cmd, string args) => {
+            var argsSplit = args.Split(" ");
+            if (argsSplit.Length >= 2) {
+              if (argsSplit[0] == "island") {
+                if (GameFunctions.IsPlayersOwnIsland()) {
+                  if (uint.TryParse(argsSplit[1], out uint id)) {
+                    var test = GameFunctions.IsMinionOnIsland(id, false);
+                    _services.ChatGui.Print($"[{Name}] Minion with Id, {argsSplit[1]} is {(test ? "" : "not ")}on island.");
+                  } else {
+                    _services.ChatGui.PrintError($"[{Name}] Invalid id = \"{argsSplit[1]}\"");
+                  }
+                } else {
+                  _services.ChatGui.PrintError($"[{Name}] This is not your own island.");
+                }
+              } else {
+                if (uint.TryParse(argsSplit[1], out uint id)) {
+                  var test = GameFunctions.HasMinionUnlocked(id);
+                  _services.ChatGui.Print($"[{Name}] Minion with Id, {argsSplit[1]} is {(test ? "" : "not ")}unlocked.");
+                } else {
+                  _services.ChatGui.PrintError($"[{Name}] Invalid id = \"{argsSplit[1]}\"");
+                }
+              }
+            } else {
+              _services.ChatGui.PrintError($"[{Name}] No args specified.");
+            }
+          }) {
+            HelpMessage = $"Debug Command"
+          });
+#endif
     } catch {
       Dispose();
       throw;
@@ -186,7 +218,7 @@ public sealed class Plugin : IDalamudPlugin {
       }
 
       SaveConfig(Configuration);
-
+      
       _services.DalamudPluginInterface.UiBuilder.Draw -= WindowManager.Draw;
       _services.DalamudPluginInterface.UiBuilder.OpenConfigUi -= WindowManager.OpenConfigWindow;
 
@@ -196,6 +228,9 @@ public sealed class Plugin : IDalamudPlugin {
       TextureHelper.Dispose();
 
       _ = _services.CommandManager.RemoveHandler(COMMAND_TEXT);
+#if DEBUG
+      _ = _services.CommandManager.RemoveHandler("/bminiondbg");
+#endif
       _actionHandler.Dispose();
 
       // TODO: free unmanaged resources (unmanaged objects) and override finalizer

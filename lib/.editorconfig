@@ -1,0 +1,6 @@
+[{**,*}]
+generated_code = true
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.CS8669.severity = none
+dotnet_diagnostic.CA1824.severity = none
+dotnet_analyzer_diagnostic.category-Style.severity = none

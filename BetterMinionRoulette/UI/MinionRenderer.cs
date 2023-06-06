@@ -15,6 +15,7 @@ internal sealed class MinionRenderer {
   private const int ROWS = 6;
 
   private static nint? _selectedUnselectedIcon;
+  private static nint? _selectedIslandIcon;
   private readonly Services _services;
 
   public MinionRenderer(Services services) {
@@ -60,6 +61,7 @@ internal sealed class MinionRenderer {
 
   public bool Render(MinionData minionData, bool enabled) {
     _selectedUnselectedIcon ??= _services.TextureHelper.LoadUldTexture("readycheck");
+    _selectedIslandIcon ??= _services.TextureHelper.LoadUldTexture("mjiminionnotebookmark");
 
     nint minionIcon = minionData.GetIcon();
 
@@ -88,14 +90,22 @@ internal sealed class MinionRenderer {
     }
 
     Vector2 finalPos = ImGui.GetCursorPos();
+    
+    // calculate overlay (bottom right corner) position
+    Vector2 overlayPos2 = originalPos + new Vector2(buttonSize.X - overlaySize.X + OVERLAY_OFFSET, (buttonSize.X - overlaySize.X) + OVERLAY_OFFSET);
+    ImGui.SetCursorPos(overlayPos2);
+
+    Vector2 offset3 = new(minionData.Island ? 0.55f : 0.0f, 0.15f);
+    Vector2 offset4 = new(minionData.Island ? 0.95f : 0.0f, 0.95f);
+    ImGui.Image(_selectedIslandIcon!.Value, overlaySize, offset3, offset4);
 
     // calculate overlay (top right corner) position
-    Vector2 overlayPos = originalPos + new Vector2(buttonSize.X - overlaySize.X + OVERLAY_OFFSET, 0);
-    ImGui.SetCursorPos(overlayPos);
+    Vector2 overlayPos1 = originalPos + new Vector2(buttonSize.X - overlaySize.X + OVERLAY_OFFSET, 0);
+    ImGui.SetCursorPos(overlayPos1);
 
-    Vector2 offset = new(enabled ? 0.1f : 0.6f, 0.2f);
+    Vector2 offset1 = new(enabled ? 0.1f : 0.6f, 0.2f);
     Vector2 offset2 = new(enabled ? 0.4f : 0.9f, 0.8f);
-    ImGui.Image(_selectedUnselectedIcon!.Value, overlaySize, offset, offset2);
+    ImGui.Image(_selectedUnselectedIcon!.Value, overlaySize, offset1, offset2);
 
     // put cursor back to where it was after rendering the button to prevent
     // messing up the table rendering

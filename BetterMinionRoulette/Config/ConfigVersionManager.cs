@@ -6,12 +6,12 @@ namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 internal static class ConfigVersionManager {
   public static void DoMigration(Configuration config) {
     config.LoadedVersion = config.Version;
-    if (config.Version <= 1) {
+    /*if (config.Version <= 1) {
       config.Version = 2;
 
       string? defaultGroup = config.Enabled ? config.DefaultGroupName : null;
       config.MinionRouletteGroup = defaultGroup;
-    }
+    }*/
 
     if (config.Version <= 2) {
       config.Version = 3;
