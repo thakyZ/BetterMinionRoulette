@@ -13,4 +13,4 @@ tags:
   - Utility
 dalamud_api_level: 8
 icon_url: https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/BetterMinionRoulette/images/icon.png
-changelog: Initial release
+changelog: Updated to Dalamud 7.6.3.0
