@@ -184,6 +184,8 @@ dotnet_diagnostic.CA5394.severity = warning
 # IDE0053: Use expression body for lambda expressions
 dotnet_diagnostic.IDE0053.severity = warning
 csharp_prefer_static_local_function = false:suggestion
+dotnet_diagnostic.CA1309.severity = silent
+dotnet_diagnostic.CA1812.severity = warning
 
 ###############################
 # VB Coding Conventions       #
