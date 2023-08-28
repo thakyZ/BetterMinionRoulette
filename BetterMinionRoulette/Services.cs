@@ -8,6 +8,7 @@ using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 
 using Lumina;
 
@@ -28,6 +29,8 @@ internal sealed class Services
     [PluginService] public DataManager DataManager { get; private set; } = null!;
 
     internal GameData GameData => DataManager.GameData;
+
+    [PluginService] public ITextureProvider TextureProvider { get; private set; } = null!;
 
     [PluginService] internal ChatGui ChatGui { get; private set; } = null!;
 
