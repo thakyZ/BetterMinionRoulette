@@ -6,6 +6,8 @@ root = true
 # All files
 [*]
 indent_style = space
+vsspell_section_id = 48623762d9a54755964260ec6a8a8622
+vsspell_ignored_words_48623762d9a54755964260ec6a8a8622 = Uld
 
 # XML project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
@@ -186,6 +188,7 @@ dotnet_diagnostic.IDE0053.severity = warning
 csharp_prefer_static_local_function = false:suggestion
 dotnet_diagnostic.CA1309.severity = silent
 dotnet_diagnostic.CA1812.severity = warning
+csharp_style_prefer_primary_constructors = true:suggestion
 
 ###############################
 # VB Coding Conventions       #
