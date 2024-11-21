@@ -2,7 +2,6 @@
 using System.IO;
 
 using Dalamud.Game.ClientState.Objects.SubKinds;
-using Dalamud.Logging;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 
@@ -10,221 +9,184 @@ using Newtonsoft.Json;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
 
-internal sealed class CharacterManager
-{
-    private readonly Services _services;
-    private readonly Configuration _configuration;
-    private CharacterConfig? _characterConfig;
-    private ulong? _playerID;
+internal sealed class CharacterManager {
+  private CharacterConfig? _characterConfig;
+  private ulong? _playerID;
 
-    public CharacterManager(Services services, Configuration configuration)
-    {
-        _services = services;
-        _configuration = configuration;
+  public CharacterConfig GetCharacterConfig(ulong playerID, IPlayerCharacter character) {
+    if (_characterConfig is { } cfg && playerID == _playerID) {
+      return cfg;
     }
 
-    public CharacterConfig GetCharacterConfig(ulong playerID, PlayerCharacter character)
-    {
-        if (_characterConfig is { } cfg && playerID == _playerID)
-        {
-            return cfg;
-        }
-
-        _playerID = playerID;
-        if (_configuration.CharacterConfigs.TryGetValue(playerID, out CharacterConfigEntry? cce))
-        {
-            _characterConfig = LoadCharacterConfig(cce);
-        }
-
-        if (_characterConfig is null)
-        {
-            _characterConfig = CreateCharacterConfig();
-            cce = new CharacterConfigEntry
-                {
-                    CharacterName = character.Name.TextValue,
-                    CharacterWorld = character.HomeWorld.GameData?.Name ?? "",
-                };
-
-            cce.FileName = $"{playerID}_{cce.CharacterName.Replace(' ', '_')}@{cce.CharacterWorld}.json";
-            _configuration.CharacterConfigs[playerID] = cce;
-
-            SaveCurrentCharacterConfig(cce);
-            _services.DalamudPluginInterface.SavePluginConfig(_configuration);
-        }
-
-        return _characterConfig;
+    _playerID = playerID;
+    if (Services.Configuration.CharacterConfigs.TryGetValue(playerID, out CharacterConfigEntry? cce)) {
+      _characterConfig = LoadCharacterConfig(cce);
     }
 
-    public bool Import(ulong fromPlayerID)
-    {
-        PluginLog.Debug($"Importing {fromPlayerID}");
-        if (fromPlayerID == _playerID || _playerID is not ulong currentPlayer)
-        {
-            PluginLog.Debug("No use importing from current character");
-            // importing from yourself is a noop and should therefore always succeed
-            return true;
-        }
+    if (_characterConfig is null) {
+      _characterConfig = CreateCharacterConfig();
+      cce = new CharacterConfigEntry {
+        CharacterName = character.Name.TextValue,
+        CharacterWorld = character.HomeWorld.IsValid ? character.HomeWorld.Value.Name.ExtractText() : string.Empty,
+      };
 
-        CharacterConfig? characterConfig = LoadCharacterConfig(fromPlayerID);
-        if (characterConfig is null || _characterConfig is null)
-        {
-            List<string> items = new();
-            if (characterConfig is null)
-                {
-                    items.Add("imported config is null");
-                }
+      cce.FileName = $"{playerID}_{cce.CharacterName.Replace(' ', '_')}@{cce.CharacterWorld}.json";
+      Services.Configuration.CharacterConfigs[playerID] = cce;
 
-            if (_characterConfig is null)
-                {
-                    items.Add("current config is null");
-                }
-
-            PluginLog.Debug($"Unable to import: {string.Join(", ", items)}");
-
-            return false;
-        }
-
-        CharacterConfigEntry cce = _configuration.CharacterConfigs[currentPlayer];
-
-        _characterConfig.CopyFrom(characterConfig);
-        SaveCurrentCharacterConfig(cce);
-
-        PluginLog.Debug("Import successful");
-        return true;
+      SaveCurrentCharacterConfig(cce);
+      Services.Interface.SavePluginConfig(Services.Configuration);
     }
 
-    public void SaveCurrentCharacterConfig()
-    {
-        if (_playerID is not ulong playerID)
-        {
-            return;
-        }
+    return _characterConfig;
+  }
 
-        CharacterConfigEntry cce = _configuration.CharacterConfigs[playerID];
-        SaveCurrentCharacterConfig(cce);
+  public bool Import(ulong fromPlayerID) {
+    Services.Log.Debug($"Importing {fromPlayerID}");
+    if (fromPlayerID == _playerID || _playerID is not ulong currentPlayer) {
+      Services.Log.Debug("No use importing from current character");
+      // importing from yourself is a noop and should therefore always succeed
+      return true;
     }
 
-    private void SaveCharacterConfig(CharacterConfigEntry entry, CharacterConfig config)
-    {
-        string dir = GetCharConfigDir();
-        if (!Directory.Exists(dir))
-        {
-            _ = Directory.CreateDirectory(dir);
-        }
+    CharacterConfig? characterConfig = LoadCharacterConfig(fromPlayerID);
+    if (characterConfig is null || _characterConfig is null) {
+      List<string> items = new();
+      if (characterConfig is null) {
+        items.Add("imported config is null");
+      }
 
-        File.WriteAllText(Path.Combine(dir, entry.FileName), JsonConvert.SerializeObject(config));
+      if (_characterConfig is null) {
+        items.Add("current config is null");
+      }
+
+      Services.Log.Debug($"Unable to import: {string.Join(", ", items)}");
+
+      return false;
     }
 
-    private CharacterConfig? LoadCharacterConfig(ulong playerID)
-    {
-        if (_configuration.CharacterConfigs.TryGetValue(playerID, out CharacterConfigEntry? cce))
-        {
-            CharacterConfig? res = playerID == Configuration.DUMMY_LEGACY_CONFIG_ID
+    CharacterConfigEntry cce = Services.Configuration.CharacterConfigs[currentPlayer];
+
+    _characterConfig.CopyFrom(characterConfig);
+    SaveCurrentCharacterConfig(cce);
+
+    Services.Log.Debug("Import successful");
+    return true;
+  }
+
+  public void SaveCurrentCharacterConfig() {
+    if (_playerID is not ulong playerID) {
+      return;
+    }
+
+    CharacterConfigEntry cce = Services.Configuration.CharacterConfigs[playerID];
+    SaveCurrentCharacterConfig(cce);
+  }
+
+  private void SaveCharacterConfig(CharacterConfigEntry entry, CharacterConfig config) {
+    string dir = GetCharConfigDir();
+    if (!Directory.Exists(dir)) {
+      _ = Directory.CreateDirectory(dir);
+    }
+
+    File.WriteAllText(Path.Combine(dir, entry.FileName), JsonConvert.SerializeObject(config));
+  }
+
+  private CharacterConfig? LoadCharacterConfig(ulong playerID) {
+    if (Services.Configuration.CharacterConfigs.TryGetValue(playerID, out CharacterConfigEntry? cce)) {
+      CharacterConfig? res = playerID == Configuration.DUMMY_LEGACY_CONFIG_ID
                                        ? LoadCharacterConfig(cce) //LoadLegacyCharacterConfig()
                                        : LoadCharacterConfig(cce);
-            if (res is not null)
-            {
-                return res;
-            }
-        }
-
-        return null;
+      if (res is not null) {
+        return res;
+      }
     }
 
-    /*private CharacterConfig LoadLegacyCharacterConfig() {
-  CharacterConfig result = new() {
-    MinionRouletteGroup = _configuration.MinionRouletteGroup,
+    return null;
+  }
+
+  /*private CharacterConfig LoadLegacyCharacterConfig() {
+CharacterConfig result = new() {
+  MinionRouletteGroup = _configuration.MinionRouletteGroup,
+};
+
+var reg = new MinionRegistry(_services);
+reg.RefreshUnlocked();
+reg.RefreshIsland();
+var allMinions = reg.GetUnlockedMinions(result.OmitIslandMinions).Select(x => x.ID).ToHashSet();
+
+AddGroup(
+    result.Groups,
+    allMinions,
+    _configuration.DefaultGroupName,
+    !_configuration.IncludeNewMinions,
+    _configuration.EnabledMinions);
+
+foreach (MinionGroup group in _configuration.Groups) {
+  // "IncludeNewMinions" meant we would just save all non-unlocked minions as enabled
+  // while now we would just save all disabled minions instead
+  AddGroup(result.Groups, allMinions, group.Name, !group.IncludedMeansActive, group.IncludedMinions);
+}
+
+return result;
+
+static void AddGroup(
+    List<MinionGroup> groups,
+    HashSet<uint> allMinions,
+    string name,
+    bool includedMeansActive,
+    HashSet<uint> includedMinions) {
+  MinionGroup newGroup = new()
+        {
+    IncludedMeansActive = includedMeansActive,
+    Name = name,
   };
 
-  var reg = new MinionRegistry(_services);
-  reg.RefreshUnlocked();
-  reg.RefreshIsland();
-  var allMinions = reg.GetUnlockedMinions(result.OmitIslandMinions).Select(x => x.ID).ToHashSet();
-
-  AddGroup(
-      result.Groups,
-      allMinions,
-      _configuration.DefaultGroupName,
-      !_configuration.IncludeNewMinions,
-      _configuration.EnabledMinions);
-
-  foreach (MinionGroup group in _configuration.Groups) {
+  groups.Add(newGroup);
+  if (newGroup.IncludedMeansActive /* Previously "IncludeNewMinions" *//*) {
+    newGroup.IncludedMinions.UnionWith(includedMinions);
+  } else {
     // "IncludeNewMinions" meant we would just save all non-unlocked minions as enabled
-    // while now we would just save all disabled minions instead
-    AddGroup(result.Groups, allMinions, group.Name, !group.IncludedMeansActive, group.IncludedMinions);
+    // so now we just save all disabled minions instead
+    newGroup.IncludedMinions.UnionWith(allMinions);
+    newGroup.IncludedMinions.ExceptWith(includedMinions);
   }
-
-  return result;
-
-  static void AddGroup(
-      List<MinionGroup> groups,
-      HashSet<uint> allMinions,
-      string name,
-      bool includedMeansActive,
-      HashSet<uint> includedMinions) {
-    MinionGroup newGroup = new()
-          {
-      IncludedMeansActive = includedMeansActive,
-      Name = name,
-    };
-
-    groups.Add(newGroup);
-    if (newGroup.IncludedMeansActive /* Previously "IncludeNewMinions" *//*) {
-      newGroup.IncludedMinions.UnionWith(includedMinions);
-    } else {
-      // "IncludeNewMinions" meant we would just save all non-unlocked minions as enabled
-      // so now we just save all disabled minions instead
-      newGroup.IncludedMinions.UnionWith(allMinions);
-      newGroup.IncludedMinions.ExceptWith(includedMinions);
-    }
-  }
+}
 }*/
 
-    private void SaveCurrentCharacterConfig(CharacterConfigEntry entry)
-    {
-        if (_characterConfig is { } charConfig)
-    {
-        SaveCharacterConfig(entry, charConfig);
+  private void SaveCurrentCharacterConfig(CharacterConfigEntry entry) {
+    if (_characterConfig is { } charConfig) {
+      SaveCharacterConfig(entry, charConfig);
     }
-    }
+  }
 
-    private CharacterConfig? LoadCharacterConfig(CharacterConfigEntry cce)
-    {
-        if (cce.FileName is not null /* can still be null if freshly loaded */)
-        {
-            string path = Path.Combine(GetCharConfigDir(), cce.FileName);
+  private CharacterConfig? LoadCharacterConfig(CharacterConfigEntry cce) {
+    if (cce.FileName is not null /* can still be null if freshly loaded */) {
+      string path = Path.Combine(GetCharConfigDir(), cce.FileName);
 
-            if (File.Exists(path))
-            {
-                try
-            {
-                return JsonConvert.DeserializeObject<CharacterConfig>(File.ReadAllText(path));
-            } catch (IOException /* file deleted in the meantime. shouldn't happen, but technically can */)
-            {
-            }
-            }
+      if (File.Exists(path)) {
+        try {
+          return JsonConvert.DeserializeObject<CharacterConfig>(File.ReadAllText(path));
+        } catch (IOException /* file deleted in the meantime. shouldn't happen, but technically can */) {
         }
-
-        return null;
+      }
     }
 
-    private static CharacterConfig CreateCharacterConfig()
-    {
-        return new() /* todo: defaults */
-{
-        Groups = new()
-        {
-            new()
-                {
-                    Name = Configuration.DEFAULT_GROUP_NAME,
-                }
-        },
-        IsNew = true,
-};
-    }
+    return null;
+  }
 
-    private string GetCharConfigDir()
-    {
-        return _services.DalamudPluginInterface.GetPluginConfigDirectory();
-    }
+  private CharacterConfig CreateCharacterConfig() {
+    // TODO: make defaults
+    return new() {
+      Groups = new() {
+        new() {
+          Name = Configuration.DEFAULT_GROUP_NAME,
+        }
+      },
+      IsNew = true,
+    };
+  }
+
+  private string GetCharConfigDir() {
+    return Services.Interface.GetPluginConfigDirectory();
+  }
 }

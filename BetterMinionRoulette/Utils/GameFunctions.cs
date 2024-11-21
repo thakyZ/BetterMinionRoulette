@@ -23,11 +23,6 @@ internal static class GameFunctions
         return false;
     }
 
-    public static unsafe Span<bool> RoamingMinionList(byte* roamingMinions)
-    {
-        return new(Unsafe.AsPointer(ref roamingMinions[0]), 496);
-    }
-
     public static unsafe bool IsMinionOnIsland(uint id, bool _default)
     {
         var mjiManager = MJIManager.Instance();
@@ -37,7 +32,7 @@ internal static class GameFunctions
             if (mjiPastureHandler is not null && IsPlayersOwnIsland())
             {
                 //return mjiPastureHandler->RoamingMinionsSpan[(int)id];
-                return RoamingMinionList(mjiPastureHandler->RoamingMinions)[(int)id];
+                return mjiPastureHandler->RoamingMinions[(int)id];
             }
         }
         return _default;

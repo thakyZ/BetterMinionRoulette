@@ -13,7 +13,7 @@ using FFXIVClientStructs.Interop;
 
 using ImGuiNET;
 
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel. Sheets;
 using Lumina.Text;
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 

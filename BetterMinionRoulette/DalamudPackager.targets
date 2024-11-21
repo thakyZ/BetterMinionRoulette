@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <Target Name="PackagePlugin-Release" AfterTargets="CleanOutDir" Condition=" '$(Configuration)' == 'Release' ">
-    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" ManifestType="yaml" MakeZip="True" Include="LICENSE;$(AssemblyName).dll;$(AssemblyName).pdb;$(AssemblyName).json" />
-  </Target>
-  <Target Name="PackagePlugin-Debug" AfterTargets="CleanOutDir" Condition=" '$(Configuration)' == 'Debug' ">
-    <DalamudPackager ProjectDir="$(ProjectDir)" OutputPath="$(OutputPath)" AssemblyName="$(AssemblyName)" ManifestType="yaml" MakeZip="False" />
-  </Target>
+	<Target Name="PackagePluginRelease" AfterTargets="Build" Condition="'$(Configuration)' == 'PersonalRelease'">
+		<DalamudPackager
+			ProjectDir="$(ProjectDir)"
+			OutputPath="$(OutputPath)"
+			AssemblyName="$(AssemblyName)"
+			MakeZip="false"
+			VersionComponents="3"/>
+	</Target>
+
+	<Target Name="PackagePluginDebug" AfterTargets="Build" Condition="'$(Configuration)' != 'PersonalRelease'">
+		<DalamudPackager
+			ProjectDir="$(ProjectDir)"
+			OutputPath="$(OutputPath)"
+			AssemblyName="$(AssemblyName)"
+			MakeZip="true"/>
+	</Target>
 </Project>

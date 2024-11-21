@@ -7,25 +7,32 @@ root = true
 [*]
 indent_style = space
 vsspell_section_id = 48623762d9a54755964260ec6a8a8622
+vsspell_dictionary_languages_48623762d9a54755964260ec6a8a8622 = inherited,en-US
 vsspell_ignored_words_48623762d9a54755964260ec6a8a8622 = Uld
+vsspell_exclusion_expressions_48623762d9a54755964260ec6a8a8622 = (?<=Game)(?:Interop)(?=Provider)(?@@PND@@/Options/None)
 
 # XML project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
+tab_width = 2
 
 # XML config files
 [*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
+tab_width = 2
 
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 2
+tab_width = 2
+end_of_line = crlf
 insert_final_newline = true
 charset = utf-8-bom
+
 ###############################
 # .NET Coding Conventions     #
 ###############################
-[*.{cs,vb}]
+[*.cs]
 # Organize usings
 dotnet_sort_system_directives_first = true
 # this. preferences
@@ -50,7 +57,7 @@ dotnet_style_collection_initializer = true:suggestion
 dotnet_style_explicit_tuple_names = true:suggestion
 dotnet_style_null_propagation = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion
-dotnet_style_prefer_is_null_check_over_reference_equality_method = true:silent
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
 dotnet_style_prefer_inferred_tuple_names = true:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
 dotnet_style_prefer_auto_properties = true:silent
@@ -69,32 +76,25 @@ dotnet_naming_symbols.constant_fields.applicable_kinds            = field
 dotnet_naming_symbols.constant_fields.applicable_accessibilities  = *
 dotnet_naming_symbols.constant_fields.required_modifiers          = const
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
-tab_width = 2
-end_of_line = crlf
 dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:suggestion
-dotnet_diagnostic.CA2227.severity = silent
 dotnet_style_namespace_match_folder = true:suggestion
 ###############################
 # C# Coding Conventions       #
 ###############################
 
-# IDE0060: Remove unused parameter
-dotnet_diagnostic.IDE0060.severity = none
-
-[*.cs]
 # var preferences
 csharp_style_var_for_built_in_types = true:silent
 csharp_style_var_when_type_is_apparent = true:silent
 csharp_style_var_elsewhere = true:silent
 # Expression-bodied members
-csharp_style_expression_bodied_methods = false:error
+csharp_style_expression_bodied_methods = false:silent
 csharp_style_expression_bodied_constructors = false:silent
-csharp_style_expression_bodied_operators = false:silent
-csharp_style_expression_bodied_properties = true:silent
-csharp_style_expression_bodied_indexers = true:silent
-csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_operators = true:silent
+csharp_style_expression_bodied_properties = false:silent
+csharp_style_expression_bodied_indexers = false:silent
+csharp_style_expression_bodied_accessors = false:silent
 # Pattern matching preferences
 csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
@@ -104,7 +104,7 @@ csharp_style_conditional_delegate_call = true:suggestion
 # Modifier preferences
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 # Expression-level preferences
-csharp_prefer_braces = true:silent
+csharp_prefer_braces = false:silent
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_pattern_local_over_anonymous_function = true:suggestion
@@ -139,20 +139,23 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
-csharp_using_directive_placement = outside_namespace:suggestion
-csharp_prefer_simple_using_statement = false:suggestion
-csharp_style_namespace_declarations = file_scoped:silent
-csharp_style_expression_bodied_lambdas = true:warning
-csharp_style_expression_bodied_local_functions = when_on_single_line:suggestion
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_simple_using_statement = false:silent
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_expression_bodied_lambdas = false:silent
+csharp_style_expression_bodied_local_functions = false:silent
 csharp_indent_case_contents_when_block = true
 
 csharp_style_prefer_method_group_conversion = true:silent
-csharp_style_prefer_top_level_statements = true:silent
+csharp_style_prefer_top_level_statements = false:warning
 csharp_style_prefer_null_check_over_type_check = true:suggestion
 csharp_style_prefer_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_index_operator = false:suggestion
 csharp_style_prefer_range_operator = false:suggestion
 csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+
+# csharp_prefer_static_local_function = false:suggestion
+# csharp_style_prefer_primary_constructors = true:suggestion
 
 ## IDE0055: Fix formatting
 #dotnet_diagnostic.IDE0055.severity = none
@@ -176,24 +179,20 @@ csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
 #dotnet_diagnostic.IDE0250.severity = none
 
 # SYSLIB1045: Convert to 'GeneratedRegexAttribute'.
-dotnet_diagnostic.SYSLIB1045.severity = none
+dotnet_diagnostic.SYSLIB1045.severity = silent
 
 ## CS8669: The annotation for nullable reference types should only be used in code within a '#nullable' context
 #dotnet_diagnostic.CS8669.severity = none
 
 # CA5394: Do not use insecure randomness
 dotnet_diagnostic.CA5394.severity = warning
+
 # IDE0053: Use expression body for lambda expressions
-dotnet_diagnostic.IDE0053.severity = warning
-csharp_prefer_static_local_function = false:suggestion
-dotnet_diagnostic.CA1309.severity = silent
-dotnet_diagnostic.CA1812.severity = warning
-csharp_style_prefer_primary_constructors = true:suggestion
+# dotnet_diagnostic.IDE0053.severity = warning
 
-###############################
-# VB Coding Conventions       #
-###############################
+# dotnet_diagnostic.CA1309.severity = silent
 
-[*.vb]
-# Modifier preferences
-visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion
+# dotnet_diagnostic.CA1812.severity = warning
+
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = silent

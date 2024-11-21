@@ -1,133 +1,129 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
-using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-using Lumina;
-
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
+using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Util;
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
+
+using CharacterManager = NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.CharacterManager;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette;
 
-internal sealed class Services
-{
-    internal readonly DalamudPluginInterface DalamudPluginInterface;
+internal sealed class ServiceMethods {
+  private event EventHandler? LoginInternal;
 
-    [PluginService] internal SigScanner SigScanner { get; private set; } = null!;
-
-    [PluginService] internal CommandManager CommandManager { get; private set; } = null!;
-
-    [PluginService] public GameGui GameGui { get; private set; } = null!;
-
-    [PluginService] public DataManager DataManager { get; private set; } = null!;
-
-    internal GameData GameData => DataManager.GameData;
-
-    [PluginService] public ITextureProvider TextureProvider { get; private set; } = null!;
-
-    [PluginService] internal ChatGui ChatGui { get; private set; } = null!;
-
-    [PluginService] internal Condition Condition { get; private set; } = null!;
-
-    [PluginService] internal ClientState ClientState { get; private set; } = null!;
-
-    [PluginService] internal Framework Framework { get; private set; } = null!;
-
-    internal Plugin PluginInstance { get; }
-
-    internal TextureHelper TextureHelper { get; }
-
-    private event EventHandler? LoginInternal;
-
-    internal event EventHandler Login
-    {
-        add
-            {
-                if (value is null)
-                              {
-                                  return;
-                              }
-
-                LoginInternal += value;
-                if (LoginInternal == value)
-                {
-                    ClientState.Login += OnLogin;
-                }
-            }
-        remove
-    {
-        LoginInternal -= value;
-        if (LoginInternal == null)
-        {
-            ClientState.Login -= OnLogin;
-        }
+  internal event EventHandler Login {
+    add {
+      if (value is null) {
+        return;
+      }
+      LoginInternal += value;
+      if (LoginInternal == value) {
+        Services.ClientState.Login += OnLogin;
+      }
     }
+    remove {
+      LoginInternal -= value;
+      if (LoginInternal == null) {
+        Services.ClientState.Login -= OnLogin;
+      }
     }
+  }
 
-    private event EventHandler<ushort>? TerritoryChangedInternal;
+  private event EventHandler<ushort>? TerritoryChangedInternal;
 
-    internal event EventHandler<ushort> TerritoryChanged
-    {
-        add
-            {
-                if (value is null)
-                              {
-                                  return;
-                              }
-
-                TerritoryChangedInternal += value;
-                if (TerritoryChangedInternal == value)
-                {
-                    ClientState.TerritoryChanged += OnTerritoryChanged;
-                }
-            }
-        remove
-    {
-        TerritoryChangedInternal -= value;
-        if (TerritoryChangedInternal == null)
-        {
-            ClientState.TerritoryChanged -= OnTerritoryChanged;
-        }
+  internal event EventHandler<ushort> TerritoryChanged {
+    add {
+      if (value is null) {
+        return;
+      }
+      TerritoryChangedInternal += value;
+      if (TerritoryChangedInternal == value) {
+        Services.ClientState.TerritoryChanged += OnTerritoryChanged;
+      }
     }
+    remove {
+      TerritoryChangedInternal -= value;
+      if (TerritoryChangedInternal == null) {
+        Services.ClientState.TerritoryChanged -= OnTerritoryChanged;
+      }
+    }
+  }
+
+  private void OnLogin() {
+    Services.Framework.Update += OnFrameworkUpdate;
+  }
+
+  private static ushort _territory;
+
+  private void OnTerritoryChanged(ushort territory) {
+    Services.Framework.Update += OnFrameworkUpdate;
+    _territory = territory;
+  }
+
+  private void OnFrameworkUpdate(IFramework framework) {
+    if (Services.ClientState.LocalPlayer is null) {
+      return;
     }
 
-    public Services(DalamudPluginInterface pluginInterface, Plugin plugin)
-    {
-        DalamudPluginInterface = pluginInterface;
-        _ = pluginInterface.Inject(this);
-        TextureHelper = new(this);
-        PluginInstance = plugin;
-    }
+    Services.Framework.Update -= OnFrameworkUpdate;
+    LoginInternal?.Invoke(this, EventArgs.Empty);
+    TerritoryChangedInternal?.Invoke(this, _territory);
+  }
+}
 
-    private void OnLogin(object? sender, EventArgs e)
-    {
-        Framework.Update += OnFrameworkUpdate;
-    }
+internal sealed class Services {
+  public static IDalamudPluginInterface Interface { get; private set; } = null!;
 
-    private static ushort _territory;
+  [PluginService]
+  public static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
 
-    private void OnTerritoryChanged(object? sender, ushort territory)
-    {
-        Framework.Update += OnFrameworkUpdate;
-        _territory = territory;
-    }
+  [PluginService]
+  public static ICommandManager CommandManager { get; private set; } = null!;
 
-    private void OnFrameworkUpdate(Framework framework)
-    {
-        if (ClientState.LocalPlayer is null)
-        {
-            return;
-        }
+  [PluginService]
+  public static IDataManager DataManager { get; private set; } = null!;
 
-        Framework.Update -= OnFrameworkUpdate;
-        LoginInternal?.Invoke(this, EventArgs.Empty);
-        TerritoryChangedInternal?.Invoke(this, _territory);
-    }
+  [PluginService]
+  public static ITextureProvider TextureProvider { get; private set; } = null!;
+
+  [PluginService]
+  public static IChatGui ChatGui { get; private set; } = null!;
+
+  [PluginService]
+  public static IClientState ClientState { get; private set; } = null!;
+
+  [PluginService]
+  public static IFramework Framework { get; private set; } = null!;
+
+  [PluginService]
+  public static IPluginLog Log { get; private set; } = null!;
+  internal static Plugin PluginInstance { get; private set; } = null!;
+  internal static TextureHelper TextureHelper { get; private set; } = null!;
+  internal static MinionRegistry MinionRegistry { get; private set; } = null!;
+  internal static WindowManager WindowManager { get; private set; } = null!;
+  internal static ServiceMethods ServiceMethods { get; private set; } = null!;
+  internal static Configuration Configuration { get; private set; } = null!;
+  internal static CharacterManager CharacterManager { get; private set; } = null!;
+
+  public static void Init(IDalamudPluginInterface pluginInterface, Plugin plugin) {
+    Interface = pluginInterface;
+    pluginInterface.Create<Services>();
+    PluginInstance ??= plugin;
+    TextureHelper = new();
+    MinionRegistry = new MinionRegistry();
+    WindowManager = new WindowManager();
+    ServiceMethods = new ServiceMethods();
+    Configuration config = pluginInterface.GetPluginConfig() as Configuration ?? Configuration.Init();
+    ConfigVersionManager.DoMigration(config);
+    config.SaveConfig();
+    Configuration = config;
+    CharacterManager = new CharacterManager();
+  }
 }

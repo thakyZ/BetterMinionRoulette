@@ -6,10 +6,10 @@ description: |-
   Allows any number of minions to be enabled for the minion roulette, instead of having to choose between the
   "up to 30" and "EVERYTHING" modes supported by the game. Also has (or will have) an option to omit the
   island sanctuary minions from being spawned.
-repo_url: https://github.com/thakyZ/BetterMinionRoulette-Dalamud
+repo_url: https://github.com/thakyZ/BetterMinionRoulette
 applicable_version: any
 tags:
   - Minion
   - Utility
-dalamud_api_level: 8
 icon_url: https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/BetterMinionRoulette/images/icon.png
+accepts_feedback: false

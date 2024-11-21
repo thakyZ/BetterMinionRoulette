@@ -6,7 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Globalization", "CA1309:Use ordinal string comparison",
-               Justification = "We actually want string normalization here, to ensure same behavior as in the duplicate check when renaming or adding a group",
+                   Justification = "We actually want string normalization here, to ensure same behavior as in the duplicate check when renaming or adding a group",
                    Scope = "member", Target = "~M:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data.CharacterConfig.GetMinionGroup(System.String)~NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data.MinionGroup")]
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes",
                    Justification = "Instantiated via reflection",
@@ -14,6 +14,39 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes",
                    Justification = "Instantiated via reflection",
                    Scope = "type", Target = "~T:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.SubCommands.DebugCommand")]
-[assembly: SuppressMessage("Security", "CA5394:Do not use insecure randomness",
-                   Justification = "Non-critical use of randomness, so we prefer speed over security",
-                   Scope = "member", Target = "~M:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils.MinionRegistry.GetRandom(FFXIVClientStructs.Interop.Pointer{FFXIVClientStructs.FFXIV.Client.Game.ActionManager},NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data.MinionGroup,System.Boolean)~System.UInt32")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.Log")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.Framework")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.ClientState")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.ChatGui")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.TextureProvider")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.DataManager")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.CommandManager")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.GameInteropProvider")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.Interface")]
+[assembly: SuppressMessage("Performance", "CA1822:Mark members as static",
+                   Justification = "IDalamudPlugin requires non-static name property.",
+                   Scope = "member", Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Plugin.Name")]
+[assembly: SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes",
+                   Justification = "This class does not need to be static.",
+                   Scope = "type", Target = "~T:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services")]
+[assembly: SuppressMessage("Roslynator", "RCS1170:Use read-only auto-implemented property.",
+                   Justification = "Dalamud services manager requires setter", Scope = "member",
+                   Target = "~P:NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Services.ServiceMethods")]

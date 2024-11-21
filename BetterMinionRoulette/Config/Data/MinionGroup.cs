@@ -4,13 +4,12 @@ using Newtonsoft.Json;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 
-internal class MinionGroup
-{
-    public virtual string Name { get; set; } = "";
+internal class MinionGroup {
+  public virtual string Name { get; set; } = "";
 
-    [JsonProperty(PropertyName = "EnabledMinions")]
-    public HashSet<uint> IncludedMinions { get; set; } = new();
+  [JsonProperty("EnabledMinions")]
+  public HashSet<uint> IncludedMinions { get; set; } = new();
 
-    [JsonProperty(PropertyName = "IncludeNewMinions")]
-    public bool IncludedMeansActive { get; set; }
+  [JsonProperty("IncludeNewMinions")]
+  public bool IncludedMeansActive { get; set; }
 }

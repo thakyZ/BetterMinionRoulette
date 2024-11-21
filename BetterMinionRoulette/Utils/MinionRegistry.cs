@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-
-using Dalamud.Logging;
 
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.Interop;
 
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel. Sheets;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 
@@ -16,156 +15,137 @@ namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 /// <summary>
 /// Responsible for maintaining a list of minions with ID, name, icon, and whether or not the minion is unlocked.
 /// </summary>
-internal sealed class MinionRegistry
-{
-    private readonly Services _services;
-    private readonly Plugin _plugin;
-    private readonly Dictionary<uint, MinionData> _minionsByID = new();
-    private readonly List<MinionData> _minions = new();
-    private bool _isInitialized;
-    private readonly object _lock = new();
+[SuppressMessage("Performance", "CA1812", Justification = "Instantiated via reflection")]
+internal sealed class MinionRegistry {
+  private readonly Dictionary<uint, MinionData> _minionsByID = new();
+  private readonly List<MinionData> _minions = new();
+  private bool _isInitialized;
+  private readonly object _lock = new();
 
-    public int UnlockedMinionCount { get; private set; }
+  public int UnlockedMinionCount { get; private set; }
 
-    public MinionRegistry(Services services)
-    {
-        _services = services;
-        _plugin = services.PluginInstance;
+  private void InitializeIfNecessary() {
+    // make sure initialization only runs once
+    if (_isInitialized) {
+      return;
     }
 
-    private void InitializeIfNecessary()
-    {
-        // make sure initialization only runs once
-        if (_isInitialized)
-        {
-            return;
+    lock (_lock) {
+      // make sure initialization only runs once
+      // (again, in case multiple threads called this at the same time)
+      if (_isInitialized) {
+        return;
+      }
+
+      _minions.AddRange(GetAllMinions());
+      foreach (MinionData minion in _minions) {
+        _minionsByID.Add(minion.ID, minion);
+      }
+
+      if (Services.PluginInstance.CharacterConfig is not null) {
+        var characterConfig = Services.PluginInstance.CharacterConfig;
+        Services.Log.Debug("Initializing island data");
+        foreach (var minion in characterConfig.IslandMinions) {
+          _minions.Find(x => x.ID == minion)!.Island = true;
+          _minionsByID[minion].Island = true;
         }
+      }
 
-        lock (_lock)
+      _isInitialized = true;
+    }
+  }
+
+  public void RefreshUnlocked() {
+    if (!Services.ClientState.IsLoggedIn) {
+      return;
+    }
+
+    InitializeIfNecessary();
+    int count = 0;
+    foreach (MinionData minion in _minions) {
+      if (minion.Unlocked = GameFunctions.HasMinionUnlocked(minion.ID)) {
+        ++count;
+      }
+    }
+
+    UnlockedMinionCount = count;
+  }
+
+  public void RefreshIsland() {
+    Services.Log.Debug("Refreshing island spawned");
+    if (Services.ClientState.TerritoryType != 1055u) {
+      return;
+    }
+    foreach (var minion in _minions) {
+      minion.Island = GameFunctions.IsMinionOnIsland(minion.ID, minion.Island);
+    }
+  }
+
+  public IEnumerable<MinionData> GetAllMinions() {
+    return from minion in Services.DataManager.Excel.GetSheet<Companion>()
+           where minion.Icon != 0 /* valid Minions only */
+           orderby minion.Order
+           select new MinionData(minion.Singular.ExtractText()) {
+             IconID = minion.Icon,
+             ID = minion.RowId,
+             Unlocked = GameFunctions.HasMinionUnlocked(minion.RowId),
+           };
+  }
+
+  public static List<MinionData> Filter(List<MinionData> minions, string filterText) {
+    return AsList(FilteredMinions(minions, filterText));
+  }
+
+  private static List<T> AsList<T>(IEnumerable<T> source) {
+    return source as List<T> ?? source.ToList();
+  }
+
+  private static IEnumerable<MinionData> FilteredMinions(IEnumerable<MinionData> _minions, string filter) {
+    if (!string.IsNullOrEmpty(filter)) {
+      _minions = _minions.Where(x => x.Name.Contains(filter, StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    return _minions;
+  }
+
+  public List<MinionData> GetUnlockedMinions(bool omitIsland) {
+    InitializeIfNecessary();
+    return _minions.Where(x => x.Unlocked && (!omitIsland || !x.Island)).ToList();
+  }
+
+  public List<MinionData> GetAvailableMinions(Pointer<ActionManager> actionManager, MinionGroup group, bool omitIsland) {
+    RefreshUnlocked();
+    List<MinionData> unlockedMinions = GetUnlockedMinions(omitIsland);
+    List<MinionData> result = new(unlockedMinions.Count);
+    RefreshIsland();
+
+
+    foreach (MinionData item in unlockedMinions)
     {
-        // make sure initialization only runs once
-        // (again, in case multiple threads called this at the same time)
-        if (_isInitialized)
+        if (group.IncludedMinions.Contains(item.ID) == group.IncludedMeansActive && item.IsAvailable(actionManager))
         {
-            return;
+            result.Add(item);
         }
-
-        _minions.AddRange(GetAllMinions());
-        foreach (MinionData minion in _minions)
-        {
-            _minionsByID.Add(minion.ID, minion);
-        }
-
-        if (!(_plugin.CharacterConfig is not { } characterConfig))
-        {
-            PluginLog.Debug("Initializing island data");
-            foreach (var minion in characterConfig.IslandMinions)
-            {
-                _minions.Find(x => x.ID == minion)!.Island = true;
-                _minionsByID[minion].Island = true;
-            }
-        }
-
-        _isInitialized = true;
-    }
     }
 
-    public void RefreshUnlocked()
-    {
-        if (!_services.ClientState.IsLoggedIn)
-        {
-            return;
-        }
+    return unlockedMinions.FindAll(x => !group.IncludedMinions.Contains(x.ID) && x.IsAvailable(actionManager));
+  }
 
-        InitializeIfNecessary();
-        int count = 0;
-        foreach (MinionData minion in _minions)
-        {
-            if (minion.Unlocked = GameFunctions.HasMinionUnlocked(minion.ID))
-            {
-                ++count;
-            }
-        }
 
-        UnlockedMinionCount = count;
+  [SuppressMessage("Security", "CA5394:Do not use insecure randomness", Justification = "Non-critical use of randomness, so we prefer speed over security")]
+  public uint GetRandom(Pointer<ActionManager> actionManager, MinionGroup group, bool omitIsland) {
+    List<MinionData> available = GetAvailableMinions(actionManager, group, omitIsland);
+
+    if (available.Count is 0) {
+      return 0;
     }
 
-    public void RefreshIsland()
-    {
-        PluginLog.Debug("Refreshing island spawned");
-        if (_services.ClientState.TerritoryType != 1055u)
-        {
-            return;
-        }
-        foreach (var minion in _minions)
-    {
-        minion.Island = GameFunctions.IsMinionOnIsland(minion.ID, minion.Island);
-    }
+    if (available.Count is 1) {
+      // shortcut: exactly one active mount: can only select that, no matter what
+      return available[0].ID;
     }
 
-    public IEnumerable<MinionData> GetAllMinions()
-    {
-        return from minion in _services.GameData.GetExcelSheet<Companion>()
-            where minion.Icon != 0 /* valid Minions only */
-            orderby minion.Order
-            select new MinionData(_services.TextureHelper, minion.Singular)
-            {
-                IconID = minion.Icon,
-                ID = minion.RowId,
-                Unlocked = GameFunctions.HasMinionUnlocked(minion.RowId),
-            };
-    }
-
-    public static List<MinionData> Filter(List<MinionData> minions, string filterText)
-    {
-        return AsList(FilteredMinions(minions, filterText));
-    }
-
-    private static List<T> AsList<T>(IEnumerable<T> source)
-    {
-        return source as List<T> ?? source.ToList();
-    }
-
-    private static IEnumerable<MinionData> FilteredMinions(IEnumerable<MinionData> _minions, string filter)
-    {
-        if (!string.IsNullOrEmpty(filter))
-        {
-            _minions = _minions.Where(x => x.Name.RawString.Contains(filter, StringComparison.CurrentCultureIgnoreCase));
-        }
-
-        return _minions;
-    }
-
-    public List<MinionData> GetUnlockedMinions(bool omitIsland)
-    {
-        InitializeIfNecessary();
-        return _minions.Where(x => x.Unlocked && (!omitIsland || !x.Island)).ToList();
-    }
-
-    public List<MinionData> GetAvailableMinions(Pointer<ActionManager> actionManager, MinionGroup group, bool omitIsland)
-    {
-        RefreshUnlocked();
-        RefreshIsland();
-        List<MinionData> unlockedMinions = GetUnlockedMinions(omitIsland);
-
-        if (group.IncludedMeansActive)
-        {
-            return unlockedMinions.FindAll(x => group.IncludedMinions.Contains(x.ID) && x.IsAvailable(actionManager));
-        }
-
-        return unlockedMinions.FindAll(x => !group.IncludedMinions.Contains(x.ID) && x.IsAvailable(actionManager));
-    }
-
-    public uint GetRandom(Pointer<ActionManager> actionManager, MinionGroup group, bool omitIsland)
-    {
-        List<MinionData> available = GetAvailableMinions(actionManager, group, omitIsland);
-
-        if (available.Count is 0)
-        {
-            return 0;
-        }
-
-        int index = Random.Shared.Next(available.Count);
-        return available[index].ID;
-    }
+    int index = Random.Shared.Next(available.Count);
+    return available[index].ID;
+  }
 }
