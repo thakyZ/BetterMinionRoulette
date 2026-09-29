@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 using Dalamud.Interface.Colors;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
 
@@ -40,7 +40,7 @@ internal sealed class RenameItemDialog : IWindow {
     if (ImGui.Begin(_title, ref isOpen, ImGuiWindowFlags.AlwaysAutoResize)) {
       ImGui.Text("Name:");
       ImGui.SameLine();
-      _ = ImGui.InputText("", ref _name, 1000);
+      _ = ImGui.InputText("##name", ref _name, 1000);
       bool nameIsInvalid = !ValidateNameImpl();
 
       ImGui.BeginDisabled(nameIsInvalid);

@@ -10,60 +10,51 @@ using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.UI;
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
 internal sealed class ActionHandler : IDisposable {
-  private readonly Hook<UseActionHandler>? _useActionHook;
-  private (bool hide, uint actionID) _hideAction;
+  private readonly Hook<ActionManager.Delegates.UseAction>? _useActionHook;
   private bool _disposedValue;
 
   public unsafe ActionHandler() {
-    nint renderAddress = (nint)ActionManager.Addresses.UseAction.Value;
+    nint renderAddress = (nint)ActionManager.MemberFunctionPointers.UseAction;
     if (renderAddress is 0) {
       Services.WindowManager.DebugWindow.Broken("Unable to load UseAction address");
       return;
     }
 
-    _useActionHook = Services.GameInteropProvider.HookFromAddress<UseActionHandler>(renderAddress, OnUseAction);
+    _useActionHook = Services.GameInteropProvider.HookFromAddress<ActionManager.Delegates.UseAction>(renderAddress, OnUseAction);
     _useActionHook.Enable();
   }
 
-  public unsafe delegate byte UseActionHandler(ActionManager* actionManager, ActionType actionType, uint actionID, long targetID = 3758096384U, uint a4 = 0U, uint a5 = 0U, uint a6 = 0U, void* a7 = default);
-
-  private unsafe byte OnUseAction(ActionManager* actionManager, ActionType actionType, uint actionID, long targetID, uint a4, uint a5, uint a6, void* a7) {
-    (bool hide, uint hideActionID) = _hideAction;
-    _hideAction = (false, 0);
-
-    if (CharacterConfig is not { } characterConfig || (characterConfig.MinionRouletteGroup is null)) {
-      return _useActionHook!.Original(actionManager, actionType, actionID, targetID, a4, a5, a6, a7);
-    }
-
-    string? groupName = (actionID, actionType) switch {
-      (10, ActionType.GeneralAction) => CharacterConfig.MinionRouletteGroup,
-      _ => null,
-    };
-
-    bool isRouletteActionID = actionID is 9 or 24;
-    ActionType oldActionType = actionType;
-    uint oldActionId = actionID;
-    if (groupName is not null) {
-      MinionGroup? minionGroup = CharacterConfig.GetMinionGroup(groupName);
-
-      uint newActionID = 0;
-      if (minionGroup is not null) {
-        newActionID = Services.MinionRegistry.GetRandom(ActionManager.Instance(), minionGroup, characterConfig.OmitIslandMinions);
+  private unsafe bool OnUseAction(ActionManager* actionManager, ActionType actionType, uint actionID, ulong targetID, uint extraParam, ActionManager.UseActionMode mode, uint comboRouteID, bool* outOptAreaTargeted) {
+    try {
+      if (actionType == ActionType.GeneralAction) {
+        Services.Log.Debug("Observed general action {ActionId}.", actionID);
       }
 
-      if (newActionID is not 0) {
-        actionType = ActionType.Companion;
-        actionID = newActionID;
+      if (actionID == 10 && actionType == ActionType.GeneralAction) {
+        if (CharacterConfig is not { } characterConfig) {
+          Services.Log.Warning("Minion Roulette was observed before the character configuration was loaded.");
+        } else if (characterConfig.MinionRouletteGroup is not { } groupName) {
+          Services.Log.Warning("Minion Roulette was observed, but custom roulette is disabled.");
+        } else if (characterConfig.GetMinionGroup(groupName) is not { } minionGroup) {
+          Services.Log.Warning("Configured minion group {GroupName} does not exist.", groupName);
+        } else {
+          Services.Log.Debug("Intercepted Minion Roulette for group {GroupName}.", groupName);
+          uint newActionID = Services.MinionRegistry.GetRandom(ActionManager.Instance(), minionGroup, characterConfig.OmitIslandMinions);
+          if (newActionID == 0) {
+            Services.Log.Warning("No available minion was found for group {GroupName}; using the game's roulette.", groupName);
+          } else {
+            Services.Log.Debug("Replacing Minion Roulette with companion {CompanionId}.", newActionID);
+            actionType = ActionType.Companion;
+            actionID = newActionID;
+          }
+        }
       }
+    } catch (Exception exception) {
+      // Never allow managed exceptions to cross the native hook boundary.
+      Services.Log.Error(exception, "Failed to select a minion; using the original action instead.");
     }
 
-    if (hide) {
-      oldActionId = hideActionID;
-      oldActionType = ActionType.GeneralAction;
-      isRouletteActionID = true;
-    }
-
-    return _useActionHook!.Original(actionManager, actionType, actionID, targetID, a4, a5, a6, a7);
+    return _useActionHook!.Original(actionManager, actionType, actionID, targetID, extraParam, mode, comboRouteID, outOptAreaTargeted);
   }
 
   public CharacterConfig? CharacterConfig { get; set; }
@@ -88,7 +79,6 @@ internal sealed class ActionHandler : IDisposable {
 
     uint minion = Services.MinionRegistry.GetRandom(ActionManager.Instance(), minionGroup, characterConfig.OmitIslandMinions);
     if (minion is not 0) {
-      _hideAction = (true, actionID: 9);
       _ = ActionManager.Instance()->UseAction(ActionType.Companion, minion);
     } else {
       Services.ChatGui.PrintError($"Unable to summon minion from group \"{arguments}\".");

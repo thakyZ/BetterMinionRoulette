@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 
@@ -42,7 +42,7 @@ internal sealed class CharacterManagementRenderer {
     }
 
     ImGui.EndListBox();
-    ImGui.BeginDisabled(_currentCharacter is null || _currentCharacter == Services.ClientState.LocalContentId);
+    ImGui.BeginDisabled(_currentCharacter is null || _currentCharacter == Services.PlayerState.ContentId);
 
     if (ImGui.Button("Import")) {
       Debug.Assert(_currentCharacter is not null);
@@ -70,7 +70,7 @@ $"Delete settings for {selectedCharacterName}? This action cannot be undone!",
     if (_currentCharacter == Configuration.DUMMY_LEGACY_CONFIG_ID) {
       ImGui.SameLine();
       ImGui.Text("This configuration cannot be deleted.");
-    } else if (_currentCharacter == Services.ClientState.LocalContentId) {
+    } else if (_currentCharacter == Services.PlayerState.ContentId) {
       ImGui.SameLine();
       ImGui.Text("You cannot import from or delete the currently active character.");
     }

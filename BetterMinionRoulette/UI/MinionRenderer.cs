@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
@@ -14,9 +14,6 @@ internal sealed class MinionRenderer {
   private const int PAGE_SIZE = COLUMNS * ROWS;
   private const int COLUMNS = 5;
   private const int ROWS = 6;
-
-  private static nint? _selectedUnselectedIcon;
-  private static nint? _selectedIslandIcon;
 
   public void RenderPage(List<MinionData> minions, MinionGroup group, int page) {
     int i = 0;
@@ -58,10 +55,10 @@ internal sealed class MinionRenderer {
   }
 
   public bool Render(MinionData minionData, bool enabled) {
-    _selectedUnselectedIcon ??= Services.TextureHelper.LoadUldTexture("readycheck");
-    _selectedIslandIcon ??= Services.TextureHelper.LoadUldTexture("mjiminionnotebookmark");
+    ImTextureID selectedUnselectedIcon = Services.TextureHelper.LoadUldTexture("readycheck");
+    ImTextureID selectedIslandIcon = Services.TextureHelper.LoadUldTexture("mjiminionnotebookmark");
 
-    nint minionIcon = minionData.GetIcon();
+    ImTextureID minionIcon = minionData.GetIcon();
 
     _ = ImGui.TableNextColumn();
 
@@ -95,7 +92,7 @@ internal sealed class MinionRenderer {
 
     Vector2 offset3 = new(minionData.Island ? 0.55f : 0.0f, 0.15f);
     Vector2 offset4 = new(minionData.Island ? 0.95f : 0.0f, 0.95f);
-    ImGui.Image(_selectedIslandIcon!.Value, overlaySize, offset3, offset4);
+    ImGui.Image(selectedIslandIcon, overlaySize, offset3, offset4);
 
     // calculate overlay (top right corner) position
     Vector2 overlayPos1 = originalPos + new Vector2(buttonSize.X - overlaySize.X + OVERLAY_OFFSET, 0);
@@ -103,7 +100,7 @@ internal sealed class MinionRenderer {
 
     Vector2 offset1 = new(enabled ? 0.1f : 0.6f, 0.2f);
     Vector2 offset2 = new(enabled ? 0.4f : 0.9f, 0.8f);
-    ImGui.Image(_selectedUnselectedIcon!.Value, overlaySize, offset1, offset2);
+    ImGui.Image(selectedUnselectedIcon, overlaySize, offset1, offset2);
 
     // put cursor back to where it was after rendering the button to prevent
     // messing up the table rendering

@@ -128,7 +128,7 @@ internal sealed class MinionRegistry {
         }
     }
 
-    return unlockedMinions.FindAll(x => !group.IncludedMinions.Contains(x.ID) && x.IsAvailable(actionManager));
+    return result;
   }
 
 

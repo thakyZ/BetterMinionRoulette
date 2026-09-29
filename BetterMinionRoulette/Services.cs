@@ -36,9 +36,9 @@ internal sealed class ServiceMethods {
     }
   }
 
-  private event EventHandler<ushort>? TerritoryChangedInternal;
+  private event EventHandler<uint>? TerritoryChangedInternal;
 
-  internal event EventHandler<ushort> TerritoryChanged {
+  internal event EventHandler<uint> TerritoryChanged {
     add {
       if (value is null) {
         return;
@@ -60,15 +60,15 @@ internal sealed class ServiceMethods {
     Services.Framework.Update += OnFrameworkUpdate;
   }
 
-  private static ushort _territory;
+  private static uint _territory;
 
-  private void OnTerritoryChanged(ushort territory) {
+  private void OnTerritoryChanged(uint territory) {
     Services.Framework.Update += OnFrameworkUpdate;
     _territory = territory;
   }
 
   private void OnFrameworkUpdate(IFramework framework) {
-    if (Services.ClientState.LocalPlayer is null) {
+    if (Services.ObjectTable.LocalPlayer is null) {
       return;
     }
 
@@ -98,6 +98,12 @@ internal sealed class Services {
 
   [PluginService]
   public static IClientState ClientState { get; private set; } = null!;
+
+  [PluginService]
+  public static IObjectTable ObjectTable { get; private set; } = null!;
+
+  [PluginService]
+  public static IPlayerState PlayerState { get; private set; } = null!;
 
   [PluginService]
   public static IFramework Framework { get; private set; } = null!;

@@ -6,8 +6,6 @@ using Lumina.Text;
 namespace NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Utils;
 
 internal sealed class MinionData {
-  private nint? _minionIcon;
-
   public uint ID { get; init; }
 
   public uint IconID { get; init; }
@@ -22,9 +20,8 @@ internal sealed class MinionData {
     Name = name;
   }
 
-  public nint GetIcon() {
-    _minionIcon ??= Services.TextureHelper.LoadIconTexture(IconID);
-    return _minionIcon!.Value;
+  public Dalamud.Bindings.ImGui.ImTextureID GetIcon() {
+    return Services.TextureHelper.LoadIconTexture(IconID);
   }
 
   public unsafe bool IsAvailable(Pointer<ActionManager> actionManager) {

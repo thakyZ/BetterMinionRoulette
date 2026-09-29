@@ -36,6 +36,8 @@ public sealed class Plugin : IDalamudPlugin {
 
   private readonly ActionHandler _actionHandler;
   private readonly ISubCommand _command;
+  private bool _mainCommandRegistered;
+  private bool _minionCommandRegistered;
 
   public unsafe Plugin(IDalamudPluginInterface pluginInterface) {
     if (pluginInterface is null) {
@@ -51,18 +53,18 @@ public sealed class Plugin : IDalamudPlugin {
 
       Services.ServiceMethods.Login += OnLogin;
       Services.ServiceMethods.TerritoryChanged += OnTerritoryChanged;
-      if (Services.ClientState.LocalPlayer is not null) {
-        OnLogin(this, EventArgs.Empty);
+      if (Services.ClientState.IsLoggedIn) {
+        _ = Services.Framework.RunOnFrameworkThread(() => OnLogin(this, EventArgs.Empty));
       }
 
       _command = InitCommands();
 
       pluginInterface.UiBuilder.OpenConfigUi += Services.WindowManager.OpenConfigWindow;
 
-      _ = Services.CommandManager.AddHandler(
+      _mainCommandRegistered = Services.CommandManager.AddHandler(
           COMMAND_TEXT,
           new CommandInfo(HandleCommand) { HelpMessage = COMMAND_HELP_MESSAGE });
-      _ = Services.CommandManager.AddHandler(
+      _minionCommandRegistered = Services.CommandManager.AddHandler(
           MINION_COMMAND_TEXT,
           new CommandInfo(_actionHandler.HandleMinionCommand) {
             HelpMessage = $"Summon a random minion from the specified group, e.g. \"{MINION_COMMAND_TEXT} My Group\" summons a minion from the \"My Group\" group"
@@ -133,8 +135,8 @@ public sealed class Plugin : IDalamudPlugin {
   }
 
   private void OnLogin(object? sender, EventArgs e) {
-    if (Services.ClientState.LocalPlayer is { } player) {
-      CharacterConfig = Services.CharacterManager.GetCharacterConfig(Services.ClientState.LocalContentId, player);
+    if (Services.ObjectTable.LocalPlayer is { } player && Services.PlayerState.IsLoaded) {
+      CharacterConfig = Services.CharacterManager.GetCharacterConfig(Services.PlayerState.ContentId, player);
       if (CharacterConfig.IsNew && Services.Configuration.CharacterConfigs.ContainsKey(Configuration.DUMMY_LEGACY_CONFIG_ID)) {
         ImportCharacterConfig();
         CharacterConfig.IsNew = false;
@@ -142,7 +144,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
   }
 
-  private void OnTerritoryChanged(object? sender, ushort territoryID) {
+  private void OnTerritoryChanged(object? sender, uint territoryID) {
     var territoryTypeSheet = Services.DataManager.Excel.GetSheet<TerritoryType>()!;
     var islandSanctuary = territoryTypeSheet.First(x => x.Name == "h1m2");
     if (islandSanctuary.RowId == territoryID) {
@@ -205,7 +207,12 @@ public sealed class Plugin : IDalamudPlugin {
 
       Services.TextureHelper.Dispose();
 
-      _ = Services.CommandManager.RemoveHandler(COMMAND_TEXT);
+      if (_mainCommandRegistered) {
+        _ = Services.CommandManager.RemoveHandler(COMMAND_TEXT);
+      }
+      if (_minionCommandRegistered) {
+        _ = Services.CommandManager.RemoveHandler(MINION_COMMAND_TEXT);
+      }
 #if DEBUG
       _ = Services.CommandManager.RemoveHandler("/bminiondbg");
 #endif

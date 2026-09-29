@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Linq;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 using NekoBoiNick.FFXIV.DalamudPlugin.BetterMinionRoulette.Config.Data;
 
@@ -75,6 +75,8 @@ internal sealed class ConfigWindow : IWindow {
 
   private static void SelectRouletteGroup(CharacterConfig characterConfig, ref string? groupName) {
     bool isEnabled = groupName is not null;
+
+    _ = ImGui.Checkbox("Use a custom group for Minion Roulette", ref isEnabled);
 
     if (isEnabled) {
       groupName ??= characterConfig.Groups.FirstOrDefault()?.Name;

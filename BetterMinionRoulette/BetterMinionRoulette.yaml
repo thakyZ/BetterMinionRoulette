@@ -12,4 +12,4 @@ tags:
   - Minion
   - Utility
 icon_url: https://raw.githubusercontent.com/thakyZ/MyDalamudPlugins/main/plugins/BetterMinionRoulette/images/icon.png
-changelog: Updated to Dalamud API 9
+changelog: Updated to Dalamud API 15, restored custom roulette selection, and fixed icon loading and action interception.
